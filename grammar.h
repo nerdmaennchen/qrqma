@@ -47,8 +47,8 @@ struct bin_op_fslash : bin_op<pegtl::one<'/'>> {};
 struct bin_op_percent : bin_op<pegtl::one<'%'>> {};
 struct bin_op_plus : bin_op<pegtl::one<'+'>> {};
 struct bin_op_minus : bin_op<pegtl::one<'-'>> {};
-struct bin_op_lshift : bin_op<pegtl::two<60>> {}; // <
-struct bin_op_rshift : bin_op<pegtl::two<62>> {}; // <
+struct bin_op_lshift : bin_op<pegtl::two<60>> {}; // <<
+struct bin_op_rshift : bin_op<pegtl::two<62>> {}; // >>
 
 struct bin_op_cmp_leq : bin_op<pegtl::string<60, 61>> {}; // <=
 struct bin_op_cmp_geq : bin_op<pegtl::string<62, 61>> {}; // >=
