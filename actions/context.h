@@ -46,6 +46,8 @@ struct Context {
         pushExpression(Expression{t, std::move(f)});
     }
     Expression popExpression();
+    std::vector<Expression> popAllExpressions();
+    
     auto expressionStackSize() const {
         return expression_stack.size();
     }

@@ -360,5 +360,35 @@ template <> struct action<grammar::ops::dpipe> {
     }
 };
 
+template <> struct action<grammar::expression> : pegtl::change_states<Context> {
+    template< typename Rule,
+            pegtl::apply_mode A,
+            pegtl::rewind_mode M,
+            template< typename... >
+            class Action,
+            template< typename... >
+            class Control,
+            typename Input>
+    [[nodiscard]] static bool match( Input& in, Context& oldC)
+    {
+        return pegtl::change_states<Context>::match< Rule, A, M, Action, Control >(std::make_index_sequence<1>{}, in, oldC.childContext(), oldC );
+    }
+
+    template <typename Input> 
+    static void success(const Input &, Context& innerC, Context& outerC) {
+        // execute all inner expressions and return the last one
+        auto expressions = innerC.popAllExpressions();
+        auto const& t = expressions.back().type;
+        outerC.pushExpression(t, [es=std::move(expressions)] {
+            auto end = std::end(es)-1;
+            auto it=std::begin(es);
+            for (;it!=end; ++it) {
+                it->eval_f();
+            }
+            return it->eval_f();
+        });
+    }
+};
+
 } // namespace actions
 } // namespace qrqma

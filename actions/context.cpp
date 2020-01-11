@@ -47,6 +47,12 @@ Context::Expression Context::popExpression() {
     return e;
 }
 
+std::vector<Context::Expression> Context::popAllExpressions() {
+    std::vector<Context::Expression> newStack;
+    std::swap(newStack, expression_stack);
+    return newStack;
+}
+
 Context::Context(SymbolTable in_symbols)
     : symbols{std::move(in_symbols)} {}
 

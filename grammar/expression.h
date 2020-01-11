@@ -79,8 +79,8 @@ struct cmp_neq : infix_op<pegtl::string<33, 61>, 9> {}; // !=
 struct amp   : infix_op<pegtl::one<38>, 10>  {}; // &
 struct hat   : infix_op<pegtl::one<94>, 11>  {}; // ^
 struct pipe  : infix_op<pegtl::one<124>, 12> {}; // |
-struct damp  : infix_op<pegtl::two<38>, 13>  {}; // &&
-struct dpipe : infix_op<pegtl::two<124>, 14> {}; // ||
+struct damp  : infix_op<pegtl::sor<pegtl::two<38>, pegtl::keyword<'a', 'n', 'd'>>, 13>  {}; // &&, and
+struct dpipe : infix_op<pegtl::sor<pegtl::two<124>, pegtl::keyword<'o', 'r'>>, 14> {}; // ||, or
 
 struct comma_seq : infix_op<pegtl::one<44>, 17> {}; // ,
 
@@ -101,8 +101,7 @@ template<> struct infix_term<11> : pegtl::sor<infix_term<10>, ops::hat> {};
 template<> struct infix_term<12> : pegtl::sor<infix_term<11>, ops::pipe> {};
 template<> struct infix_term<13> : pegtl::sor<infix_term<12>, ops::damp> {};
 template<> struct infix_term<14> : pegtl::sor<infix_term<13>, ops::dpipe> {};
-// this grammar shall not support the comma operator... it renders the grammar super complicated anyways
-// template<> struct infix_term<17> : pegtl::sor<ops::comma_seq, infix_term<16>> {};
+template<> struct infix_term<17> : pegtl::sor<ops::comma_seq, infix_term<16>> {};
 
 struct infix_expression : infix_term<17> {};
 }
