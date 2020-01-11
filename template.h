@@ -8,10 +8,10 @@
 
 namespace qrqma {
 
-struct StringRenderer {
-    StringRenderer(std::string_view input,
+struct Template {
+    Template(std::string_view input,
                    std::map<std::string, symbol::Symbol> symbols);
-    ~StringRenderer();
+    ~Template();
 
     std::string operator()() const;
 

@@ -7,7 +7,7 @@ namespace qrqma {
 template <typename T> struct unique_func;
 
 template <typename Res, typename... Args> struct unique_func<Res(Args...)> {
-  private:
+private:
     struct PimplBase {
         PimplBase() = default;
         virtual ~PimplBase() = default;
@@ -27,7 +27,7 @@ template <typename Res, typename... Args> struct unique_func<Res(Args...)> {
     };
     std::unique_ptr<PimplBase> pimpl;
 
-  public:
+public:
     template <typename Functor>
     unique_func(Functor functor)
         : pimpl{std::make_unique<TypedPimpl<Functor>>(std::move(functor))} {}
