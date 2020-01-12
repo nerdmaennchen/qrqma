@@ -22,13 +22,13 @@ static void infix_helper(Context &context, Context::Expression lhs, Context::Exp
 
 template<typename op>
 static bool exact_infix_helper(Context& context, Context::Expression& lhs, Context::Expression& rhs, op&& operation) {
-    if (lhs.type == typeid(types::Integer) and rhs.type == typeid(types::Integer)) {
+    if (lhs.type() == typeid(types::Integer) and rhs.type() == typeid(types::Integer)) {
         infix_helper<types::Integer, types::Integer>(context, std::move(lhs), std::move(rhs), operation);
-    } else if (lhs.type == typeid(types::Integer) and rhs.type == typeid(types::Bool)) {
+    } else if (lhs.type() == typeid(types::Integer) and rhs.type() == typeid(types::Bool)) {
         infix_helper<types::Integer, types::Bool>(context, std::move(lhs), std::move(rhs), operation);
-    } else if (lhs.type == typeid(types::Bool) and rhs.type == typeid(types::Integer)) {
+    } else if (lhs.type() == typeid(types::Bool) and rhs.type() == typeid(types::Integer)) {
         infix_helper<types::Bool, types::Integer>(context, std::move(lhs), std::move(rhs), operation);
-    } else if (lhs.type == typeid(types::Bool) and rhs.type == typeid(types::Bool)) {
+    } else if (lhs.type() == typeid(types::Bool) and rhs.type() == typeid(types::Bool)) {
         infix_helper<types::Bool, types::Bool>(context, std::move(lhs), std::move(rhs), operation);
     } else {
         return false;
@@ -38,23 +38,23 @@ static bool exact_infix_helper(Context& context, Context::Expression& lhs, Conte
 
 template<typename op>
 static bool numeric_infix_helper(Context& context, Context::Expression& lhs, Context::Expression& rhs, op&& operation) {
-    if (lhs.type == typeid(types::Integer) and rhs.type == typeid(types::Integer)) {
+    if (lhs.type() == typeid(types::Integer) and rhs.type() == typeid(types::Integer)) {
         infix_helper<types::Integer, types::Integer>(context, std::move(lhs), std::move(rhs), operation);
-    } else if (lhs.type == typeid(types::Integer) and rhs.type == typeid(types::Float)) {
+    } else if (lhs.type() == typeid(types::Integer) and rhs.type() == typeid(types::Float)) {
         infix_helper<types::Integer, types::Float>(context, std::move(lhs), std::move(rhs), operation);
-    } else if (lhs.type == typeid(types::Integer) and rhs.type == typeid(types::Bool)) {
+    } else if (lhs.type() == typeid(types::Integer) and rhs.type() == typeid(types::Bool)) {
         infix_helper<types::Integer, types::Bool>(context, std::move(lhs), std::move(rhs), operation);
-    } else if (lhs.type == typeid(types::Float) and rhs.type == typeid(types::Integer)) {
+    } else if (lhs.type() == typeid(types::Float) and rhs.type() == typeid(types::Integer)) {
         infix_helper<types::Float, types::Integer>(context, std::move(lhs), std::move(rhs), operation);
-    } else if (lhs.type == typeid(types::Float) and rhs.type == typeid(types::Float)) {
+    } else if (lhs.type() == typeid(types::Float) and rhs.type() == typeid(types::Float)) {
         infix_helper<types::Float, types::Float>(context, std::move(lhs), std::move(rhs), operation);
-    } else if (lhs.type == typeid(types::Float) and rhs.type == typeid(types::Bool)) {
+    } else if (lhs.type() == typeid(types::Float) and rhs.type() == typeid(types::Bool)) {
         infix_helper<types::Float, types::Bool>(context, std::move(lhs), std::move(rhs), operation);
-    } else if (lhs.type == typeid(types::Bool) and rhs.type == typeid(types::Integer)) {
+    } else if (lhs.type() == typeid(types::Bool) and rhs.type() == typeid(types::Integer)) {
         infix_helper<types::Bool, types::Integer>(context, std::move(lhs), std::move(rhs), operation);
-    } else if (lhs.type == typeid(types::Bool) and rhs.type == typeid(types::Float)) {
+    } else if (lhs.type() == typeid(types::Bool) and rhs.type() == typeid(types::Float)) {
         infix_helper<types::Bool, types::Float>(context, std::move(lhs), std::move(rhs), operation);
-    } else if (lhs.type == typeid(types::Bool) and rhs.type == typeid(types::Bool)) {
+    } else if (lhs.type() == typeid(types::Bool) and rhs.type() == typeid(types::Bool)) {
         infix_helper<types::Bool, types::Bool>(context, std::move(lhs), std::move(rhs), operation);
     } else {
         return false;
@@ -64,40 +64,40 @@ static bool numeric_infix_helper(Context& context, Context::Expression& lhs, Con
 
 template<typename op>
 static bool complete_infix_helper(Context& context, Context::Expression& lhs, Context::Expression& rhs, op&& operation) {
-    if (lhs.type == typeid(types::Integer) and rhs.type == typeid(types::Integer)) {
+    if (lhs.type() == typeid(types::Integer) and rhs.type() == typeid(types::Integer)) {
         infix_helper<types::Integer, types::Integer>(context, std::move(lhs), std::move(rhs), operation);
-    } else if (lhs.type == typeid(types::Integer) and rhs.type == typeid(types::Float)) {
+    } else if (lhs.type() == typeid(types::Integer) and rhs.type() == typeid(types::Float)) {
         infix_helper<types::Integer, types::Float>(context, std::move(lhs), std::move(rhs), operation);
-    } else if (lhs.type == typeid(types::Integer) and rhs.type == typeid(types::Bool)) {
+    } else if (lhs.type() == typeid(types::Integer) and rhs.type() == typeid(types::Bool)) {
         infix_helper<types::Integer, types::Bool>(context, std::move(lhs), std::move(rhs), operation);
-    } else if (lhs.type == typeid(types::Integer) and rhs.type == typeid(types::String)) {
+    } else if (lhs.type() == typeid(types::Integer) and rhs.type() == typeid(types::String)) {
         infix_helper<types::Integer, types::String>(context, std::move(lhs), std::move(rhs), operation);
 
-    } else if (lhs.type == typeid(types::Float) and rhs.type == typeid(types::Integer)) {
+    } else if (lhs.type() == typeid(types::Float) and rhs.type() == typeid(types::Integer)) {
         infix_helper<types::Float, types::Integer>(context, std::move(lhs), std::move(rhs), operation);
-    } else if (lhs.type == typeid(types::Float) and rhs.type == typeid(types::Float)) {
+    } else if (lhs.type() == typeid(types::Float) and rhs.type() == typeid(types::Float)) {
         infix_helper<types::Float, types::Float>(context, std::move(lhs), std::move(rhs), operation);
-    } else if (lhs.type == typeid(types::Float) and rhs.type == typeid(types::Bool)) {
+    } else if (lhs.type() == typeid(types::Float) and rhs.type() == typeid(types::Bool)) {
         infix_helper<types::Float, types::Bool>(context, std::move(lhs), std::move(rhs), operation);
-    } else if (lhs.type == typeid(types::Float) and rhs.type == typeid(types::String)) {
+    } else if (lhs.type() == typeid(types::Float) and rhs.type() == typeid(types::String)) {
         infix_helper<types::Float, types::String>(context, std::move(lhs), std::move(rhs), operation);
 
-    } else if (lhs.type == typeid(types::Bool) and rhs.type == typeid(types::Integer)) {
+    } else if (lhs.type() == typeid(types::Bool) and rhs.type() == typeid(types::Integer)) {
         infix_helper<types::Bool, types::Integer>(context, std::move(lhs), std::move(rhs), operation);
-    } else if (lhs.type == typeid(types::Bool) and rhs.type == typeid(types::Float)) {
+    } else if (lhs.type() == typeid(types::Bool) and rhs.type() == typeid(types::Float)) {
         infix_helper<types::Bool, types::Float>(context, std::move(lhs), std::move(rhs), operation);
-    } else if (lhs.type == typeid(types::Bool) and rhs.type == typeid(types::Bool)) {
+    } else if (lhs.type() == typeid(types::Bool) and rhs.type() == typeid(types::Bool)) {
         infix_helper<types::Bool, types::Bool>(context, std::move(lhs), std::move(rhs), operation);
-    } else if (lhs.type == typeid(types::Bool) and rhs.type == typeid(types::String)) {
+    } else if (lhs.type() == typeid(types::Bool) and rhs.type() == typeid(types::String)) {
         infix_helper<types::Bool, types::String>(context, std::move(lhs), std::move(rhs), operation);
 
-    } else if (lhs.type == typeid(types::String) and rhs.type == typeid(types::Integer)) {
+    } else if (lhs.type() == typeid(types::String) and rhs.type() == typeid(types::Integer)) {
         infix_helper<types::String, types::Integer>(context, std::move(lhs), std::move(rhs), operation);
-    } else if (lhs.type == typeid(types::String) and rhs.type == typeid(types::Float)) {
+    } else if (lhs.type() == typeid(types::String) and rhs.type() == typeid(types::Float)) {
         infix_helper<types::String, types::Float>(context, std::move(lhs), std::move(rhs), operation);
-    } else if (lhs.type == typeid(types::String) and rhs.type == typeid(types::Bool)) {
+    } else if (lhs.type() == typeid(types::String) and rhs.type() == typeid(types::Bool)) {
         infix_helper<types::String, types::Bool>(context, std::move(lhs), std::move(rhs), operation);
-    } else if (lhs.type == typeid(types::String) and rhs.type == typeid(types::String)) {
+    } else if (lhs.type() == typeid(types::String) and rhs.type() == typeid(types::String)) {
         infix_helper<types::String, types::String>(context, std::move(lhs), std::move(rhs), operation);
     } else {
         return false;
@@ -109,7 +109,7 @@ template<typename op>
 static bool infix_helper_w_str(Context& context, Context::Expression& lhs, Context::Expression& rhs, op&& operation) {
     if (numeric_infix_helper(context, lhs, rhs, std::forward<op>(operation))) {
         return true;
-    } else if (lhs.type == typeid(types::String) and rhs.type == typeid(types::String)) {
+    } else if (lhs.type() == typeid(types::String) and rhs.type() == typeid(types::String)) {
         infix_helper<types::String, types::String>(context, std::move(lhs), std::move(rhs), operation);
     } else {
         return false;
@@ -123,20 +123,20 @@ static bool infix_helper_w_str(Context& context, Context::Expression& lhs, Conte
 template <> struct action<grammar::ops::unary_minus> {
     template <typename Input> static void apply(const Input &, Context &context) {
         auto e = context.popExpression();
-        if (e.type == typeid(types::Integer)) {
-            context.pushExpression(e.type, [e_=std::move(e)]{
+        if (e.type() == typeid(types::Integer)) {
+            context.pushExpression(e.type(), [e_=std::move(e)]{
                 return -e_.eval<types::Integer>();
             });
-        } else if (e.type == typeid(types::Float)) {
-            context.pushExpression(e.type, [e_=std::move(e)]{
+        } else if (e.type() == typeid(types::Float)) {
+            context.pushExpression(e.type(), [e_=std::move(e)]{
                 return -e_.eval<types::Float>();
             });
-        } else if (e.type == typeid(types::Bool)) {
-            context.pushExpression(e.type, [e_=std::move(e)]{
+        } else if (e.type() == typeid(types::Bool)) {
+            context.pushExpression(e.type(), [e_=std::move(e)]{
                 return -e_.eval<types::Bool>();
             });
         } else {
-            throw std::runtime_error("cannot apply unary minus to type: " + internal::demangle(e.type));
+            throw std::runtime_error("cannot apply unary minus to type: " + internal::demangle(e.type()));
         }
     }
 };
@@ -144,7 +144,7 @@ template <> struct action<grammar::ops::unary_minus> {
 template <> struct action<grammar::ops::unary_not> {
     template <typename Input> static void apply(const Input &, Context &context) {
         auto e = context.popExpression();
-        auto c = context.convert(e.type, typeid(types::Bool));
+        auto c = context.convert(e.type(), typeid(types::Bool));
         auto f = [c=std::move(c), e=std::move(e)]{ 
             return !std::any_cast<types::Bool>(c(e.eval_f()));
         };
@@ -158,7 +158,7 @@ template <> struct action<grammar::ops::star> {
         auto lhs = context.popExpression();
         auto op = [](auto const& l, auto const& r) { return l*r; };
         if (not detail::numeric_infix_helper(context, lhs, rhs, op)) {
-            throw std::runtime_error("cannot apply operator* to " + internal::demangle(lhs.type) + " and " + internal::demangle(rhs.type));
+            throw std::runtime_error("cannot apply operator* to " + internal::demangle(lhs.type()) + " and " + internal::demangle(rhs.type()));
         }
     }
 };
@@ -168,7 +168,7 @@ template <> struct action<grammar::ops::fslash> {
         auto lhs = context.popExpression();
         auto op = [](auto const& l, auto const& r) { return l/r; };
         if (not detail::numeric_infix_helper(context, lhs, rhs, op)) {
-            throw std::runtime_error("cannot apply operator/ to " + internal::demangle(lhs.type) + " and " + internal::demangle(rhs.type));
+            throw std::runtime_error("cannot apply operator/ to " + internal::demangle(lhs.type()) + " and " + internal::demangle(rhs.type()));
         }
     }
 };
@@ -177,10 +177,10 @@ template <> struct action<grammar::ops::percent> {
         auto rhs = context.popExpression();
         auto lhs = context.popExpression();
         auto op = [](auto const& l, auto const& r) { return l*r; };
-        if (rhs.type == typeid(types::Integer) and rhs.type == typeid(types::Integer)) {
+        if (rhs.type() == typeid(types::Integer) and rhs.type() == typeid(types::Integer)) {
             detail::infix_helper<types::Integer, types::Integer>(context, std::move(lhs), std::move(rhs), op);
         } else {
-            throw std::runtime_error("cannot apply operator% to " + internal::demangle(lhs.type) + " and " + internal::demangle(rhs.type));
+            throw std::runtime_error("cannot apply operator% to " + internal::demangle(lhs.type()) + " and " + internal::demangle(rhs.type()));
         }
     }
 };
@@ -194,10 +194,10 @@ template <> struct action<grammar::ops::plus> {
         };
         if (detail::numeric_infix_helper(context, lhs, rhs, op)) {
             return;
-        } else if (lhs.type == typeid(types::String) and rhs.type == typeid(types::String)) {
+        } else if (lhs.type() == typeid(types::String) and rhs.type() == typeid(types::String)) {
             detail::infix_helper<types::String, types::String>(context, std::move(lhs), std::move(rhs), op);
         } else {
-            throw std::runtime_error("cannot apply operator+ to " + internal::demangle(lhs.type) + " and " + internal::demangle(rhs.type));
+            throw std::runtime_error("cannot apply operator+ to " + internal::demangle(lhs.type()) + " and " + internal::demangle(rhs.type()));
         }
     }
 };
@@ -207,7 +207,7 @@ template <> struct action<grammar::ops::minus> {
         auto lhs = context.popExpression();
         auto op = [](auto const& l, auto const& r) { return l-r; };
         if (not detail::numeric_infix_helper(context, lhs, rhs, op)) {
-            throw std::runtime_error("cannot apply operator+ to " + internal::demangle(lhs.type) + " and " + internal::demangle(rhs.type));
+            throw std::runtime_error("cannot apply operator+ to " + internal::demangle(lhs.type()) + " and " + internal::demangle(rhs.type()));
         }
     }
 };
@@ -217,10 +217,10 @@ template <> struct action<grammar::ops::lshift> {
         auto rhs = context.popExpression();
         auto lhs = context.popExpression();
         auto op = [](auto const& l, auto const& r) { return l<<r; };
-        if (rhs.type == typeid(types::Integer) and rhs.type == typeid(types::Integer)) {
+        if (rhs.type() == typeid(types::Integer) and rhs.type() == typeid(types::Integer)) {
             detail::infix_helper<types::Integer, types::Integer>(context, std::move(lhs), std::move(rhs), op);
         } else {
-            throw std::runtime_error("cannot apply operator<< to " + internal::demangle(lhs.type) + " and " + internal::demangle(rhs.type));
+            throw std::runtime_error("cannot apply operator<< to " + internal::demangle(lhs.type()) + " and " + internal::demangle(rhs.type()));
         }
     }
 };
@@ -229,10 +229,10 @@ template <> struct action<grammar::ops::rshift> {
         auto rhs = context.popExpression();
         auto lhs = context.popExpression();
         auto op = [](auto const& l, auto const& r) { return l>>r; };
-        if (rhs.type == typeid(types::Integer) and rhs.type == typeid(types::Integer)) {
+        if (rhs.type() == typeid(types::Integer) and rhs.type() == typeid(types::Integer)) {
             detail::infix_helper<types::Integer, types::Integer>(context, std::move(lhs), std::move(rhs), op);
         } else {
-            throw std::runtime_error("cannot apply operator>> to " + internal::demangle(lhs.type) + " and " + internal::demangle(rhs.type));
+            throw std::runtime_error("cannot apply operator>> to " + internal::demangle(lhs.type()) + " and " + internal::demangle(rhs.type()));
         }
     }
 };
@@ -243,7 +243,7 @@ template <> struct action<grammar::ops::cmp_lt> {
         auto lhs = context.popExpression();
         auto op = [](auto const& l, auto const& r) { return l<r; };
         if (not detail::infix_helper_w_str(context, lhs, rhs, op)) {
-            throw std::runtime_error("cannot apply operator< to " + internal::demangle(lhs.type) + " and " + internal::demangle(rhs.type));
+            throw std::runtime_error("cannot apply operator< to " + internal::demangle(lhs.type()) + " and " + internal::demangle(rhs.type()));
         }
     }
 };
@@ -253,7 +253,7 @@ template <> struct action<grammar::ops::cmp_leq> {
         auto lhs = context.popExpression();
         auto op = [](auto const& l, auto const& r) { return l<=r; };
         if (not detail::infix_helper_w_str(context, lhs, rhs, op)) {
-            throw std::runtime_error("cannot apply operator<= to " + internal::demangle(lhs.type) + " and " + internal::demangle(rhs.type));
+            throw std::runtime_error("cannot apply operator<= to " + internal::demangle(lhs.type()) + " and " + internal::demangle(rhs.type()));
         }
     }
 };
@@ -263,7 +263,7 @@ template <> struct action<grammar::ops::cmp_gt> {
         auto lhs = context.popExpression();
         auto op = [](auto const& l, auto const& r) { return l>r; };
         if (not detail::infix_helper_w_str(context, lhs, rhs, op)) {
-            throw std::runtime_error("cannot apply operator> to " + internal::demangle(lhs.type) + " and " + internal::demangle(rhs.type));
+            throw std::runtime_error("cannot apply operator> to " + internal::demangle(lhs.type()) + " and " + internal::demangle(rhs.type()));
         }
     }
 };
@@ -273,7 +273,7 @@ template <> struct action<grammar::ops::cmp_geq> {
         auto lhs = context.popExpression();
         auto op = [](auto const& l, auto const& r) { return l>=r; };
         if (not detail::infix_helper_w_str(context, lhs, rhs, op)) {
-            throw std::runtime_error("cannot apply operator>= to " + internal::demangle(lhs.type) + " and " + internal::demangle(rhs.type));
+            throw std::runtime_error("cannot apply operator>= to " + internal::demangle(lhs.type()) + " and " + internal::demangle(rhs.type()));
         }
     }
 };
@@ -284,7 +284,7 @@ template <> struct action<grammar::ops::cmp_eq> {
         auto lhs = context.popExpression();
         auto op = [](auto const& l, auto const& r) { return l==r; };
         if (not detail::infix_helper_w_str(context, lhs, rhs, op)) {
-            throw std::runtime_error("cannot apply operator== to " + internal::demangle(lhs.type) + " and " + internal::demangle(rhs.type));
+            throw std::runtime_error("cannot apply operator== to " + internal::demangle(lhs.type()) + " and " + internal::demangle(rhs.type()));
         }
     }
 };
@@ -294,7 +294,7 @@ template <> struct action<grammar::ops::cmp_neq> {
         auto lhs = context.popExpression();
         auto op = [](auto const& l, auto const& r) { return l==r; };
         if (not detail::infix_helper_w_str(context, lhs, rhs, op)) {
-            throw std::runtime_error("cannot apply operator!= to " + internal::demangle(lhs.type) + " and " + internal::demangle(rhs.type));
+            throw std::runtime_error("cannot apply operator!= to " + internal::demangle(lhs.type()) + " and " + internal::demangle(rhs.type()));
         }
     }
 };
@@ -305,7 +305,7 @@ template <> struct action<grammar::ops::amp> {
         auto lhs = context.popExpression();
         auto op = [](auto const& l, auto const& r) { return l&r; };
         if (not detail::exact_infix_helper(context, lhs, rhs, op)) {
-            throw std::runtime_error("cannot apply operator& to " + internal::demangle(lhs.type) + " and " + internal::demangle(rhs.type));
+            throw std::runtime_error("cannot apply operator& to " + internal::demangle(lhs.type()) + " and " + internal::demangle(rhs.type()));
         }
     }
 };
@@ -315,7 +315,7 @@ template <> struct action<grammar::ops::hat> {
         auto lhs = context.popExpression();
         auto op = [](auto const& l, auto const& r) { return l^r; };
         if (not detail::exact_infix_helper(context, lhs, rhs, op)) {
-            throw std::runtime_error("cannot apply operator^ to " + internal::demangle(lhs.type) + " and " + internal::demangle(rhs.type));
+            throw std::runtime_error("cannot apply operator^ to " + internal::demangle(lhs.type()) + " and " + internal::demangle(rhs.type()));
         }
     }
 };
@@ -325,7 +325,7 @@ template <> struct action<grammar::ops::pipe> {
         auto lhs = context.popExpression();
         auto op = [](auto const& l, auto const& r) { return l|r; };
         if (not detail::exact_infix_helper(context, lhs, rhs, op)) {
-            throw std::runtime_error("cannot apply operator| to " + internal::demangle(lhs.type) + " and " + internal::demangle(rhs.type));
+            throw std::runtime_error("cannot apply operator| to " + internal::demangle(lhs.type()) + " and " + internal::demangle(rhs.type()));
         }
     }
 };
@@ -340,7 +340,7 @@ template <> struct action<grammar::ops::damp> {
             [](std::string const& l, auto const& r) { return not l.empty() && static_cast<bool>(r); },
         };
         if (not detail::complete_infix_helper(context, lhs, rhs, op)) {
-            throw std::runtime_error("cannot apply operator&& to " + internal::demangle(lhs.type) + " and " + internal::demangle(rhs.type));
+            throw std::runtime_error("cannot apply operator&& to " + internal::demangle(lhs.type()) + " and " + internal::demangle(rhs.type()));
         }
     }
 };
@@ -355,7 +355,7 @@ template <> struct action<grammar::ops::dpipe> {
             [](std::string const& l, auto const& r) { return not l.empty() || static_cast<bool>(r); },
         };
         if (not detail::complete_infix_helper(context, lhs, rhs, op)) {
-            throw std::runtime_error("cannot apply operator|| to " + internal::demangle(lhs.type) + " and " + internal::demangle(rhs.type));
+            throw std::runtime_error("cannot apply operator|| to " + internal::demangle(lhs.type()) + " and " + internal::demangle(rhs.type()));
         }
     }
 };
@@ -378,7 +378,7 @@ template <> struct action<grammar::expression> : pegtl::change_states<Context> {
     static void success(const Input &, Context& innerC, Context& outerC) {
         // execute all inner expressions and return the last one
         auto expressions = innerC.popAllExpressions();
-        auto const& t = expressions.back().type;
+        auto const& t = expressions.back().type();
         outerC.pushExpression(t, [es=std::move(expressions)] {
             auto end = std::end(es)-1;
             auto it=std::begin(es);

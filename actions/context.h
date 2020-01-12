@@ -23,16 +23,20 @@ struct Context {
 
     struct Expression {
         using FuncType = qrqma::unique_func<symbol::Symbol()>;
-        Expression(std::type_info const& t, FuncType func) 
-          : type{t}, eval_f{std::move(func)} {}
 
-        Expression(Expression&& other) noexcept : type{other.type}, eval_f{std::move(other.eval_f)} {}
+        Expression(std::type_info const& t, FuncType func) 
+          : mType{t}, mEval{std::move(func)} {}
+
+        Expression(Expression&& other) noexcept : mType{std::move(other.mType)}, mEval{std::move(other.mEval)} {}
 
         template<typename T>
         T eval() const { return std::any_cast<T>(eval_f()); }
 
-        std::type_info const& type;
-        FuncType eval_f;
+        std::any eval_f() const { return mEval(); }
+        std::type_info const& type() { return mType; }
+    private:
+        std::type_info const& mType;
+        FuncType mEval;
     };
 
     Context() = default;
@@ -45,6 +49,7 @@ struct Context {
     void pushExpression(std::type_info const& t, Expression::FuncType f) {
         pushExpression(Expression{t, std::move(f)});
     }
+    
     Expression popExpression();
     std::vector<Expression> popAllExpressions();
     
@@ -53,9 +58,13 @@ struct Context {
     }
 
     symbol::Symbol const &operator[](std::string const &name) const;
+    symbol::Symbol const* getSymbol(std::string const &name) const;
+
+    void setSymbol(std::string const& name, symbol::Symbol symbol);
+
     std::string operator()() const;
 
-    ConverterFunc convert(std::type_info const& from, std::type_info const& to);
+    static ConverterFunc convert(std::type_info const& from, std::type_info const& to);
 
     Context& childContext();
 

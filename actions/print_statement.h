@@ -10,8 +10,12 @@ template <>
 struct action<grammar::print_expression> {
     template <typename Input>
     static void apply(const Input&, Context &context) {
-        auto expression = context.popExpression();
-        auto const& from_type = expression.type;
+        auto stack = context.popAllExpressions();
+        if (stack.empty()) {
+            return;
+        }
+        auto& expression = stack.back();
+        auto const& from_type = expression.type();
         context.addToken([
             expression=std::move(expression), 
             converter = context.convert(from_type, typeid(std::string))] {

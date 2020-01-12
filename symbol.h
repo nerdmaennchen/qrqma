@@ -50,5 +50,44 @@ private:
     }
 };
 
+struct List {
+    std::vector<Symbol> list;
+
+    template<typename inner_type> 
+    List(std::vector<inner_type> l) {
+        for (auto& e : l) {
+            list.emplace_back(std::move(e));
+        }
+    }
+
+    bool empty() const {
+        return list.empty();
+    }
+    auto size() const -> decltype(list.size()) {
+        return list.size();
+    }
+
+    auto begin() const -> decltype(std::begin(list)) {
+        return std::begin(list);
+    }
+    auto end() const -> decltype(std::end(list)) {
+        return std::end(list);
+    }
+    auto rbegin() const -> decltype(std::rbegin(list)) {
+        return std::rbegin(list);
+    }
+    auto rend() const -> decltype(std::rend(list)) {
+        return std::rend(list);
+    }
+
+    auto operator[](std::size_t index) -> decltype(list[index])& {
+        return list[index];
+    }
+    auto operator[](std::size_t index) const -> decltype(list[index]) const& {
+        return list[index];
+    }
+
+};
+
 } // namespace symbol
 } // namespace qrqma

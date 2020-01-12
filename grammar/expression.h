@@ -7,6 +7,7 @@ namespace grammar {
 namespace pegtl = tao::pegtl;
 
 struct expression;
+struct atom;
 
 template <char delim>
 struct quoted_string : pegtl::if_must<pegtl::one<delim>, pegtl::until<pegtl::one<delim>>> {};
@@ -28,9 +29,12 @@ struct float_num : pegtl::seq<
                     >> {};
 struct number : pegtl::sor<float_num, integer> {};
 
-struct identifier : pegtl::seq<pegtl::not_at<boolean>, pegtl::identifier> {};
+// similar to pegtl::identifier_other but with the '.' character allowed
+using identifier_other = pegtl::internal::ranges< pegtl::internal::peek_char, 'a', 'z', 'A', 'Z', '0', '9', '_', '_', '.' >;
+struct identifier : pegtl::seq<pegtl::not_at<boolean>, pegtl::seq< pegtl::identifier_first, pegtl::star< identifier_other > >> {};
 
-struct atom : pegtl::sor<string_literal, boolean, number, identifier> {};
+struct atom_list : pegtl::if_must<pegtl::one<'['>, pegtl::opt<pegtl::list<padded<atom>, pegtl::one<','>>>, spaces, pegtl::one<']'>> {};
+struct atom : pegtl::sor<string_literal, boolean, number, identifier, atom_list> {};
 
 namespace ops {
 

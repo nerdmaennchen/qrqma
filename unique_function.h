@@ -35,6 +35,8 @@ public:
     unique_func() = default;
     unique_func(unique_func &&) = default;
     unique_func &operator=(unique_func &&) = default;
+    unique_func(unique_func const &) = delete;
+    unique_func &operator=(unique_func const&) = delete;
 
     Res operator()(Args &&... args) {
         return pimpl->invoke(std::forward<Args>(args)...);
