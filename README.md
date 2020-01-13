@@ -253,20 +253,19 @@ Note, however, that C++ ``std::map``s are **ordered***.
 
 Inside of a for-loop block, you can access some special variables:
 
-| Variable                                                                                | Description                                                                             |
-| --------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------- |
-| loop.index                                                                              | The current iteration of the loop. (1 indexed)                                          |
-| loop.index0                                                                             | The current iteration of the loop. (0 indexed)                                          |
-| loop.revindex                                                                           | The number of iterations from the end of the loop (1 indexed)                           |
-| loop.revindex0                                                                          | The number of iterations from the end of the loop (0 indexed)                           |
-| loop.first                                                                              | True if first iteration.                                                                |
-| loop.last                                                                               | True if last iteration.                                                                 |
-| loop.length                                                                             | The number of items in the sequence.                                                    |
-| loop.depth                                                                              | Indicates how deep in a recursive loop the rendering currently is. Starts at level 1    |
-| loop.depth0                                                                             | Indicates how deep in a recursive loop the rendering currently is. Starts at level 0    |
-| loop.previtem                                                                           |
-| The item from the previous iteration of the loop. Undefined during the first iteration. |
-| loop.nextitem                                                                           | The item from the following iteration of the loop. Undefined during the last iteration. |
+| Variable       | Description                                                                             |
+| -------------- | --------------------------------------------------------------------------------------- |
+| loop.index     | The current iteration of the loop. (1 indexed)                                          |
+| loop.index0    | The current iteration of the loop. (0 indexed)                                          |
+| loop.revindex  | The number of iterations from the end of the loop (1 indexed)                           |
+| loop.revindex0 | The number of iterations from the end of the loop (0 indexed)                           |
+| loop.first     | True if first iteration.                                                                |
+| loop.last      | True if last iteration.                                                                 |
+| loop.length    | The number of items in the sequence.                                                    |
+| loop.depth     | Indicates how deep in a recursive loop the rendering currently is. Starts at level 1    |
+| loop.depth0    | Indicates how deep in a recursive loop the rendering currently is. Starts at level 0    |
+| loop.previtem  | The item from the previous iteration of the loop. Undefined during the first iteration. |
+| loop.nextitem  | The item from the following iteration of the loop. Undefined during the last iteration. |
 
 The loop variable always refers to the closest (innermost) loop.
 If we have more than one level of loops, we can rebind the variable loop by writing ``{% set outer_loop.index = loop.index %}`` after the loop that we want to use recursively.
