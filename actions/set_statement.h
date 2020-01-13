@@ -8,7 +8,7 @@ namespace actions {
 
 namespace pegtl = tao::pegtl;
 
-template <> struct action<grammar::set_statement> : pegtl::change_states<std::string, Context> {
+template <> struct action<grammar::set_control_statement> : pegtl::change_states<std::string, Context> {
     template< typename Rule, pegtl::apply_mode A, pegtl::rewind_mode M, template< typename... > class Action, template< typename... > class Control, typename Input>
     [[nodiscard]] static bool match( Input& in, Context& context)
     {

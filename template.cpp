@@ -13,19 +13,31 @@ namespace qrqma {
 struct Template::Pimpl {
     actions::Context context;
 
-    Pimpl(actions::Context::SymbolTable symbols)
-        : context{std::move(symbols)} {}
+    Pimpl(actions::Context::SymbolTable symbols, TemplateLoader loader, symbol::BlockTable blocks)
+        : context{std::move(symbols), std::move(blocks)} {
+            context.setTemplateLoader(std::move(loader));
+        }
 };
 
 namespace pegtl = tao::pegtl;
-Template::Template(std::string_view input, std::map<std::string, symbol::Symbol> symbols)
-    : pimpl{std::make_unique<Pimpl>(std::move(symbols))} 
+Template::Template(std::string_view input, symbol::SymbolTable symbols, TemplateLoader loader, symbol::BlockTable blocks)
+    : pimpl{std::make_unique<Pimpl>(std::move(symbols), std::move(loader), std::move(blocks))} 
 {
     pegtl::parse<pegtl::seq<grammar::grammar, pegtl::eof>, actions::action>(
         pegtl::memory_input{input, ""}, 
         pimpl->context
     );
 }
+
+Template::Template(Template&& rhs) {
+    std::swap(pimpl, rhs.pimpl);
+}
+
+Template& Template::operator=(Template&& rhs) {
+    std::swap(pimpl, rhs.pimpl);
+    return *this;
+}
+    
 
 Template::~Template() {}
 

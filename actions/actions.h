@@ -15,7 +15,10 @@ template <typename Rule> struct action : pegtl::nothing<Rule> {};
 
 #include "atom.h"
 #include "function_call.h"
-#include "control_statement.h"
+#include "index_operator.h"
+#include "block_statement.h"
+#include "extends_statement.h"
+#include "if_statement.h"
 #include "for_statement.h"
 #include "set_statement.h"
 #include "print_statement.h"

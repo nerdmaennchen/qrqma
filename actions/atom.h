@@ -63,16 +63,12 @@ template <> struct action<grammar::bool_true> {
     static void apply(const Input &, Context &context) {
         context.pushExpression( typeid(true), []{ return true; } );
     }
-
-    static void apply(std::string const &in, Context &context);
 };
 template <> struct action<grammar::bool_false> {
     template <typename Input>
     static void apply(const Input &, Context &context) {
         context.pushExpression( typeid(false), []{ return false; } );
     }
-
-    static void apply(std::string const &in, Context &context);
 };
 
 template <>
@@ -80,7 +76,7 @@ struct action<grammar::identifier> {
     template <typename Input>
     static void apply(const Input &in, Context &context) {
         auto const& s = context[in.string()];
-        context.pushExpression(s.type(), [&s]{
+        context.pushExpression(s.type(), [&s] {
             return s;
         });
     }
@@ -95,13 +91,34 @@ template <> struct action<grammar::atom_list> : pegtl::change_states<Context> {
 
     template <typename Input> 
     static void success(const Input &, Context& inner_context, Context& outer_context) {
-        std::vector<symbol::Symbol> sym_list;
+        symbol::List l;
         for (auto const& e : inner_context.popAllExpressions()) {
-            sym_list.emplace_back(e.eval_f());
+            l.emplace_back(e.eval_f());
         }
-        symbol::List list{std::move(sym_list)};
-        outer_context.pushExpression(typeid(list), [l = std::move(list)]{
+        outer_context.pushExpression(typeid(l), [l = std::move(l)]{
             return l;
+        });
+    }
+};
+
+template <> struct action<grammar::atom_map> : pegtl::change_states<Context> {
+    template< typename Rule, pegtl::apply_mode A, pegtl::rewind_mode M, template< typename... > class Action, template< typename... > class Control, typename Input>
+    [[nodiscard]] static bool match( Input& in, Context& context)
+    {
+        return pegtl::change_states<Context>::match< Rule, A, M, Action, Control >(std::make_index_sequence<1>{}, in, context.childContext(), context );
+    }
+
+    template <typename Input> 
+    static void success(const Input &, Context& inner_context, Context& outer_context) {
+        symbol::Map m;
+        auto expressions = inner_context.popAllExpressions();
+        for (auto k_it=expressions.begin(); k_it != expressions.end(); k_it+=2) {
+            auto v_it = std::next(k_it);
+            auto c = outer_context.convert(k_it->type(), typeid(types::String));
+            m.emplace(std::any_cast<types::String>(c(k_it->eval_f())), v_it->eval_f());
+        }
+        outer_context.pushExpression(typeid(m), [m = std::move(m)]{
+            return m;
         });
     }
 };

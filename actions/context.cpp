@@ -14,7 +14,7 @@ template <class... Ts> overloaded(Ts...)->overloaded<Ts...>;
 namespace qrqma {
 namespace actions {
 
-symbol::Symbol const &Context::operator[](std::string const &name) const {
+Context::Symbol const& Context::operator[](std::string const &name) const {
     Context const *context{this};
     while (context) {
         auto it = context->symbols.find(name);
@@ -37,16 +37,39 @@ symbol::Symbol const* Context::getSymbol(std::string const &name) const {
     return nullptr;
 }
 
-void Context::setSymbol(std::string const& name, symbol::Symbol symbol) {
-    symbols.insert_or_assign(name, std::move(symbol));
+Context::SymbolTable const& Context::getSymbolTable() const { return symbols; }
+
+void Context::setSymbol(std::string const& name, Symbol symbol) {
+    symbols[name] = std::move(symbol);
+}
+
+Context::Block const& Context::getBlock(std::string const &name) const {
+    Context const *context{this};
+    while (context) {
+        auto it = context->blocks.find(name);
+        if (it != context->blocks.end()) {
+            return it->second;
+        }
+        context = context->parent;
+    }
+    throw std::runtime_error("no block with name \"" + name + "\" provided!");
+}
+void Context::setBlock(std::string const& name, Block block) {
+    blocks.emplace(name, std::move(block));
+}
+Context::BlockTable Context::popBlockTable() { 
+    BlockTable table;
+    std::swap(table, blocks);
+    return table; 
 }
 
 std::string Context::operator()() const {
     std::string s;
     for (auto const &t : tokens) {
-        std::visit(overloaded{[&](StaticText const &t) { s += t; },
-                              [&](Callable const &c) { s += c(); }},
-                   t);
+        s += std::visit(overloaded{
+            [](StaticText const &t) -> std::string { return t; },
+            [](Callable const &c) -> std::string { return c(); }},
+        t);
     }
     return s;
 }
@@ -70,8 +93,10 @@ std::vector<Context::Expression> Context::popAllExpressions() {
     return newStack;
 }
 
-Context::Context(SymbolTable in_symbols)
-    : symbols{std::move(in_symbols)} {}
+Context::Context(SymbolTable in_symbols, BlockTable in_blocks)
+    : symbols{std::move(in_symbols)} 
+    , blocks{std::move(in_blocks)}
+{}
 
 Context::Context(Context const* c_parent)
     : parent{c_parent} {}

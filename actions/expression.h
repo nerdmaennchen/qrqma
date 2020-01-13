@@ -4,14 +4,11 @@
 #include "types.h"
 #include "../demangle.h"
 #include "../grammar/grammar.h"
-
+#include "overloaded.h"
 
 namespace qrqma {
 namespace actions {
 namespace detail {
-
-template <class... Ts> struct overloaded : Ts... { using Ts::operator()...; };
-template <class... Ts> overloaded(Ts...)->overloaded<Ts...>;
 
 template<typename L, typename R, typename op>
 static void infix_helper(Context &context, Context::Expression lhs, Context::Expression rhs, op&& o) {

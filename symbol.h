@@ -4,11 +4,20 @@
 #include <functional>
 #include <type_traits>
 #include <any>
+#include <map>
+#include <vector>
+#include <variant>
 
 namespace qrqma {
 namespace symbol {
 
+struct StaticText : std::string {};
+using Callable = unique_func<std::string()>;
+using Block = std::variant<StaticText, Callable>;
+using BlockTable = std::map<std::string, Block>;
+
 using Symbol = std::any;
+using SymbolTable = std::map<std::string, Symbol>;
 
 struct Function {
     using AnyVec = std::vector<std::any>;
@@ -50,44 +59,8 @@ private:
     }
 };
 
-struct List {
-    std::vector<Symbol> list;
-
-    template<typename inner_type> 
-    List(std::vector<inner_type> l) {
-        for (auto& e : l) {
-            list.emplace_back(std::move(e));
-        }
-    }
-
-    bool empty() const {
-        return list.empty();
-    }
-    auto size() const -> decltype(list.size()) {
-        return list.size();
-    }
-
-    auto begin() const -> decltype(std::begin(list)) {
-        return std::begin(list);
-    }
-    auto end() const -> decltype(std::end(list)) {
-        return std::end(list);
-    }
-    auto rbegin() const -> decltype(std::rbegin(list)) {
-        return std::rbegin(list);
-    }
-    auto rend() const -> decltype(std::rend(list)) {
-        return std::rend(list);
-    }
-
-    auto operator[](std::size_t index) -> decltype(list[index])& {
-        return list[index];
-    }
-    auto operator[](std::size_t index) const -> decltype(list[index]) const& {
-        return list[index];
-    }
-
-};
+using List = std::vector<Symbol>;
+using Map = std::map<std::string, Symbol>;
 
 } // namespace symbol
 } // namespace qrqma

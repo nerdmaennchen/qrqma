@@ -19,7 +19,7 @@ template <> struct action<grammar::for_control_statement> : pegtl::change_states
     {
         char const* marker = in.current();
         auto& inner_context = context.childContext();
-             
+
         inner_context.setSymbol("loop.length",    types::Integer{});
         
         inner_context.setSymbol("loop.index0",    types::Integer{});
@@ -32,7 +32,7 @@ template <> struct action<grammar::for_control_statement> : pegtl::change_states
         inner_context.setSymbol("loop.previtem", {});
         inner_context.setSymbol("loop.nextitem", {});
 
-        return pegtl::change_states<std::string, Context>::match< Rule, A, M, Action, Control >(std::make_index_sequence<3>{}, in, SymbolList{}, context.childContext(), inner_context, context, marker);
+        return pegtl::change_states<SymbolList, Context, Context>::match< Rule, A, M, Action, Control >(std::make_index_sequence<3>{}, in, SymbolList{}, context.childContext(), inner_context, context, marker);
     }
 
     template <typename Input> 
