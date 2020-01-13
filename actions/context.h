@@ -30,16 +30,16 @@ struct Context {
     struct Expression {
         using FuncType = qrqma::unique_func<Symbol()>;
 
-        Expression(std::type_info const& t, FuncType func) 
+        Expression(std::type_info const& t, FuncType func)
           : mType{t}, mEval{std::move(func)} {}
 
         Expression(Expression&& other) noexcept : mType{std::move(other.mType)}, mEval{std::move(other.mEval)} {}
 
-        template<typename T>
-        T eval() const { return std::any_cast<T>(eval_f()); }
-
         auto eval_f() const { return mEval(); }
         std::type_info const& type() { return mType; }
+
+        template<typename T>
+        T eval() const { return std::any_cast<T>(eval_f()); }
 
     private:
         std::type_info const& mType;
@@ -63,10 +63,10 @@ struct Context {
     void pushExpression(std::type_info const& t, Expression::FuncType f) {
         pushExpression(Expression{t, std::move(f)});
     }
-    
+
     Expression popExpression();
     std::vector<Expression> popAllExpressions();
-    
+
     auto expressionStackSize() const {
         return expression_stack.size();
     }
