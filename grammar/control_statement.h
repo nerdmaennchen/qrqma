@@ -66,7 +66,7 @@ struct block_statement : control_statement_token<block_token, block_identifier> 
 struct block_control_statement : pegtl::seq<
     block_statement, 
     block_content,
-    control_statement_token<pegtl::keyword<'e', 'n', 'd', 'b', 'l', 'o', 'c', 'k'>> 
+    control_statement_token<pegtl::keyword<'e', 'n', 'd', 'b', 'l', 'o', 'c', 'k'>, pegtl::star<pegtl::any> > 
     > {};
 
 struct block_control_statement_outer   : control_statement_outer<block_token, block_control_statement> {};
