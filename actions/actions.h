@@ -1,6 +1,6 @@
 #pragma once
 
-#include "qrqma/tao/pegtl.hpp"
+#include "../tao/pegtl.hpp"
 
 namespace qrqma {
 namespace actions {
