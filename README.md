@@ -8,9 +8,11 @@ qrqma aims to be a reimplementation of Jinja and the similarity of the documenta
 If you love Jinja but miss using it from C++, you might love qrqma as well.
 
 The motivation behind qrqma is to bring the ease of dynamic content generation from Jinja (or django) to the world of C++.
-Below is an analogous minimal template example to the [one the Jinja documentation](https://jinja.palletsprojects.com/en/2.10.x/templates/#synopsis).
-The difference to the Jinja example is that within a qrqma template you cannot access members of an object.
+Below is an analogous minimal template example to the [one in the Jinja documentation](https://jinja.palletsprojects.com/en/2.10.x/templates/#synopsis).
+The biggest difference to the Jinja example is that within a qrqma template you cannot access members of an object.
 Therefore the functions ``href`` and ``caption`` need to be provided.
+The reason for this is C++'s lack of runtime reflection.
+qrqma is an attempt to get a template engine as far as possible in C++ (with type safety!).
 
 ~~~C++
 #include <iostream>
@@ -268,7 +270,7 @@ Inside of a for-loop block, you can access some special variables:
 | loop.nextitem  | The item from the following iteration of the loop. Undefined during the last iteration. |
 
 The loop variable always refers to the closest (innermost) loop.
-If we have more than one level of loops, we can rebind the variable loop by writing ``{% set outer_loop.index = loop.index %}`` after the loop that we want to use recursively.
+If we have more than one level of loops, we can rebind the loop variables by writing ``{% set outer_loop.index = loop.index %}`` after the loop that we want to use recursively.
 Then, we can call it using ``{{ outer_loop.index }}``.
 As qrqma does not support member access, variables are allowed to have a '.' in their names. 
 In the example the variable ``outer_loop.index`` is a single variable with a slightly confusing name.
