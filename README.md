@@ -1,10 +1,7 @@
 # QRQMA
-[Jinja](https://jinja.palletsprojects.com/) templates for C++
-
-QRQMA is a similar implementation of [Jinja](https://jinja.palletsprojects.com/) templates.
+qrqma is a C++ implementaion of [Jinja](https://jinja.palletsprojects.com/) templates that tries to go as far as possible to reach Jinja's flexibility while retaining as much C++ mentality as possible.
 
 Plenty of this documentation is taken from the [Jinja documentation](https://jinja.palletsprojects.com/).
-qrqma aims to be a reimplementation of Jinja and the similarity of the documentation shall reflect this.
 If you love Jinja but miss using it from C++, you might love qrqma as well.
 
 The motivation behind qrqma is to bring the ease of dynamic content generation from Jinja (or django) to the world of C++.
@@ -12,7 +9,7 @@ Below is an analogous minimal template example to the [one in the Jinja document
 The biggest difference to the Jinja example is that within a qrqma template you cannot access members of an object.
 Therefore the functions ``href`` and ``caption`` need to be provided.
 The reason for this is C++'s lack of runtime reflection.
-qrqma is an attempt to get a template engine as far as possible in C++ (with type safety!).
+qrqma is an attempt to get a template engine as far as possible in C++ (with type safety where it is possible and compiled templates for quick rendering!).
 
 ~~~C++
 #include <iostream>
@@ -57,6 +54,12 @@ int main() {
 }
 ~~~
 
+# Getting Started
+
+To use qrqma in you C++ project the easiest way is to simply copy the qrqma sources into your project source directory and you're set.
+
+## Statements
+
 Jinja allows for four types of statements, whereas qrqma only allows for three (line statements are not implemented)
 
 - ``{% ... %}`` for (control) Statements
@@ -66,14 +69,14 @@ Jinja allows for four types of statements, whereas qrqma only allows for three (
 ## Variables
 
 Template variables are passed to the template renderer or defined inside the template. Attributes and member functions of variables cannot be (directly) accessed from within a qrqma template. However, a function to provide an accessor can easily be passed to the renderer.
-If a variable is a ``std::map`` that has ``std::string``s as keys then its elements can be accessed like so:
+Elements of variables of type ``symbols::Map`` (which implies a map from ``std::string``s as keys to ``std::any``s) can be accessed like so:
 
 ~~~
 {{ foo['bar'] }}
 ~~~
 
 If a variable or attribute does not exist, the template renderer will throw an exception during template compile time.
-Also if the template does something with a variable where no type conversion is known (e.g. pass a variable of type ``bool`` to a function that expects as ``std::string``) an exception will be thrown.
+Also if the template does something with a variable where no type conversion is known (e.g. pass a variable of type ``bool`` to a function that expects a ``std::string``) an exception will be thrown.
 
 
 ## Filters
@@ -251,7 +254,7 @@ Or similarly using a single loop variable:
 </dl>
 ~~~
 
-Note, however, that C++ ``std::map``s are **ordered***.
+Note, however, that C++ ``std::map``s are **ordered**.
 
 Inside of a for-loop block, you can access some special variables:
 
@@ -306,7 +309,7 @@ You can use more complex Expressions there, too:
 
 ## Assignments
 
-Inside code blocks, you can also assign values to variables. Assignments at top level (outside of blocks, macros or loops) are exported from the template like top level macros and can be imported by other templates.
+Inside control blocks, you can also assign values to variables. Assignments at top level (outside of blocks, ifs or loops) are exported from the template and can be used within parent templates.
 
 Assignments use the set tag:
 ~~~
