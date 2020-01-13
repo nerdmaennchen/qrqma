@@ -69,6 +69,40 @@ template <> struct action<grammar::for_control_statement> : pegtl::change_states
 
                 return ret;
             });
+        } else if (iterable.type() == typeid(symbol::Map)) {
+            if (symbol_names.size() > 2) {
+                throw std::runtime_error("cannot broadcast list items into more than two identifiers: \"" + std::string{marker, std::size_t(in.current()-marker)} + "\"");
+            }
+            outer_context.addToken([it = std::move(iterable), symbol_names=std::move(symbol_names), &inner_context]{
+                auto m = it.eval<symbol::Map>();
+                std::string ret;
+                
+                inner_context.setSymbol("loop.length", static_cast<types::Integer>(m.size()));
+                types::Integer itCounter {};
+
+                for (auto it=begin(m); it!=end(m); ++it) {
+                    inner_context.setSymbol("loop.index0", itCounter);
+                    inner_context.setSymbol("loop.index",  itCounter+1);
+                    inner_context.setSymbol("loop.revindex0", static_cast<types::Integer>(m.size() - itCounter - 1));
+                    inner_context.setSymbol("loop.revindex",  static_cast<types::Integer>(m.size() - itCounter));
+                    inner_context.setSymbol("loop.first",  itCounter == 0);
+                    inner_context.setSymbol("loop.last",   itCounter == static_cast<types::Integer>(m.size()-1));
+
+                    inner_context.setSymbol("loop.previtem",  itCounter==0?std::any():std::prev(it)->first);
+                    inner_context.setSymbol("loop.nextitem",  itCounter==static_cast<types::Integer>(m.size()-1)?std::any():std::next(it)->first);
+
+                    inner_context.setSymbol(symbol_names[0], it->first);
+                    if (symbol_names.size() == 2) {
+                        inner_context.setSymbol(symbol_names[1], it->second);
+                    }
+            
+                    ret += inner_context();
+
+                    itCounter++;
+                }
+
+                return ret;
+            });
         }
     }
 };
