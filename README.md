@@ -13,42 +13,46 @@ The difference to the Jinja example is that within a qrqma template you cannot a
 Therefore the functions ``href`` and ``caption`` need to be provided.
 
 ~~~C++
-auto templateStr = R"(
+#include <iostream>
+#include "qrqma/template.h"
+
+int main() {
+    auto templateStr = R"(
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<title>My Webpage</title>
+    <title>My Webpage</title>
 </head>
 <body>
-<ul id="navigation">
-{% for item in navigation %}
-    <li><a href="{{ href(item) }}">{{ caption(item) }}</a></li>
-{% endfor %}
-</ul>
+    <ul id="navigation">
+    {% for item in navigation %}
+        <li><a href="{{ href(item) }}">{{ caption(item) }}</a></li>
+    {% endfor %}
+    </ul>
 
-<h1>My Webpage</h1>
-{{ a_variable }}
+    <h1>My Webpage</h1>
+    {{ a_variable }}
 
-{# a comment #}
+    {# a comment #}
 </body>
 </html>)";
-
-struct NavItem { std::string href, caption; };
-
-qrqma::Template rendering{
-    templateStr,
-    {
-        {"navigation", qrqma::symbol::List{{NavItem{"Home", "index.html"}, NavItem{"Blog", "blog.html"}}} },
-        {"href", qrqma::symbol::Function{[](NavItem const& ni) {
-            return ni.href;
-        }}},
-        {"caption", qrqma::symbol::Function{[](NavItem const& ni) {
-            return ni.caption;
-        }}},
-        {"a_variable", std::string{"qrqma is awesome!"}}
-    }
-};
-std::cout << rendering() << std::endl;
+    struct NavItem { std::string href, caption; };
+    qrqma::Template rendering{
+        templateStr,
+        {
+            {"navigation", qrqma::symbol::List{{NavItem{"Home", "index.html"}, NavItem{"Blog", "blog.html"}}} },
+            {"href", qrqma::symbol::Function{[](NavItem const& ni) {
+                return ni.href;
+            }}},
+            {"caption", qrqma::symbol::Function{[](NavItem const& ni) {
+                return ni.caption;
+            }}},
+            {"a_variable", std::string{"qrqma is awesome!"}}
+        }
+    };
+    std::cout << rendering() << std::endl;
+    return 0;
+}
 ~~~
 
 Jinja allows for four types of statements, whereas qrqma only allows for three (line statements are not implemented)
