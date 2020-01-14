@@ -24,7 +24,7 @@ DEFINES		+=
 
 FP_FLAGS       ?=
 COMMON_FLAGS	+= $(DEFINES) $(FP_FLAGS)
-COMMON_FLAGS	+= -O0
+COMMON_FLAGS	+= -O0 -g3
 COMMON_FLAGS	+= $(INCLUDE_CMD)
 
 #COMMON_FLAGS    += -fsanitize=address
