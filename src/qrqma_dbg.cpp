@@ -76,13 +76,13 @@ struct normal : pegtl::normal<Rule>
 void qrqma_dbg() {
     namespace pegtl = tao::pegtl;
     if (template_text) {
-        pegtl::parse<pegtl::seq<qrqma::grammar::grammar, pegtl::eof>, pegtl::nothing, normal>(
+        pegtl::parse<pegtl::if_must<qrqma::grammar::grammar, pegtl::eof>, pegtl::nothing, normal>(
             pegtl::memory_input{*template_text, ""}, Marker_Stack{}
         );
     }
     if (template_file) {
         auto content = qrqma::defaultLoader()(template_file->native());
-        pegtl::parse<pegtl::seq<qrqma::grammar::grammar, pegtl::eof>, pegtl::nothing, normal>(
+        pegtl::parse<pegtl::if_must<qrqma::grammar::grammar, pegtl::eof>, pegtl::nothing, normal>(
             pegtl::memory_input{content, ""}, Marker_Stack{}
         );
     }
