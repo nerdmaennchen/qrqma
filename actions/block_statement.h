@@ -24,9 +24,11 @@ template <> struct action<grammar::block_control_statement> : pegtl::change_stat
         outer_ctx.setBlock(block_name, renderFunc);
         outer_ctx.addToken([&outer_ctx, block_name=std::move(block_name)]{
             return std::visit(detail::overloaded{
-                    [](Context::StaticText const &t) -> std::string { return t; },
-                    [](Context::Callable const &c) -> std::string { return c(); }},
-                outer_ctx.getBlock(block_name));
+                    [](Context::StaticText const &t) -> Context::RenderOutput { return {t, false}; },
+                    [](Context::Renderable const &c) -> Context::RenderOutput { return c(); },
+                    [](auto const&) -> Context::RenderOutput { return {"", true}; }},
+                outer_ctx.getBlock(block_name)
+            );
         });
     }
 };

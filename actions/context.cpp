@@ -63,15 +63,20 @@ Context::BlockTable Context::popBlockTable() {
     return table; 
 }
 
-std::string Context::operator()() const {
-    std::string s;
+Context::RenderOutput Context::operator()() const {
+    RenderOutput ro;
     for (auto const &t : tokens) {
-        s += std::visit(overloaded{
-            [](StaticText const &t) -> std::string { return t; },
-            [](Callable const &c) -> std::string { return c(); }},
+        auto ro_sub = std::visit(overloaded{
+            [](StaticText const &t) -> RenderOutput { return {t, false}; },
+            [](Renderable const &c) -> RenderOutput { return c(); },
+            [](auto const&) -> RenderOutput { return {"", true}; }},
         t);
+        ro.rendered += ro_sub.rendered;
+        if (ro_sub.stop_rendering_flag) {
+            return {std::move(ro.rendered), true};
+        }
     }
-    return s;
+    return ro;
 }
 
 void Context::addToken(Token t) { tokens.emplace_back(std::move(t)); }
@@ -98,7 +103,7 @@ Context::Context(SymbolTable in_symbols, BlockTable in_blocks)
     , blocks{std::move(in_blocks)}
 {}
 
-Context::Context(Context const* c_parent)
+Context::Context(Context* c_parent)
     : parent{c_parent} {}
 
 

@@ -12,8 +12,14 @@ namespace qrqma {
 namespace symbol {
 
 struct StaticText : std::string {};
-using Callable = unique_func<std::string()>;
-using Block = std::variant<StaticText, Callable>;
+
+// the RenderOutput mechanism is used to render only parts of a template (e.g., for use as child template)
+struct RenderOutput { 
+    std::string rendered;
+    bool stop_rendering_flag {false};
+};
+using Renderable = unique_func<RenderOutput()>;
+using Block = std::variant<StaticText, Renderable>;
 using BlockTable = std::map<std::string, Block>;
 
 using Symbol = std::any;

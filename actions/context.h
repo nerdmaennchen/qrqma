@@ -16,10 +16,12 @@ namespace actions {
 struct Context {
     using Symbol = symbol::Symbol;
     using StaticText = symbol::StaticText;
-    using Callable = symbol::Callable;
+    using RenderOutput = symbol::RenderOutput;
+    using Renderable = symbol::Renderable;
     using Block = symbol::Block;
-
-    using Token = std::variant<StaticText, Callable>;
+    struct Stop {};
+    
+    using Token = std::variant<StaticText, Renderable, Stop>;
 
     using SymbolTable = symbol::SymbolTable;
     using BlockTable  = symbol::BlockTable;
@@ -48,7 +50,7 @@ struct Context {
 
     Context() = default;
     Context(SymbolTable symbols, BlockTable blocks);
-    Context(Context const* parent);
+    Context(Context* parent);
 
     void setTemplateLoader(TemplateLoader loader) {
         templateLoader = std::move(loader);
@@ -80,15 +82,13 @@ struct Context {
     void setBlock(std::string const& name, Block block);
     BlockTable popBlockTable();
 
-
-    // render this context as string
-    std::string operator()() const;
+    RenderOutput operator()() const;
 
     static ConverterFunc convert(std::type_info const& from, std::type_info const& to);
 
     Context& childContext();
 
-    Context const* parentContext() const {
+    Context* parentContext() {
         return parent;
     }
 
@@ -104,7 +104,7 @@ private:
 
     std::optional<TemplateLoader> templateLoader {nullptr};
 
-    Context const* parent{nullptr};
+    Context* parent{nullptr};
 };
 
 }

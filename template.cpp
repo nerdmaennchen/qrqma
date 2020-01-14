@@ -41,6 +41,8 @@ Template& Template::operator=(Template&& rhs) {
 
 Template::~Template() {}
 
-std::string Template::operator()() const { return pimpl->context(); }
+std::string Template::operator()() const { 
+    return pimpl->context().rendered;
+}
 
 } // namespace qrqma
