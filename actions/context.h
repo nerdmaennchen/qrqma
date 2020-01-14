@@ -73,7 +73,7 @@ struct Context {
         return expression_stack.size();
     }
 
-    Symbol const& operator[](std::string const &name) const;
+    Symbol& operator[](std::string const &name);
     Symbol const* getSymbol(std::string const &name) const;
     SymbolTable const& getSymbolTable() const;
     void setSymbol(std::string const& name, Symbol symbol);

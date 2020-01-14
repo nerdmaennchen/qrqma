@@ -14,8 +14,8 @@ template <class... Ts> overloaded(Ts...)->overloaded<Ts...>;
 namespace qrqma {
 namespace actions {
 
-Context::Symbol const& Context::operator[](std::string const &name) const {
-    Context const *context{this};
+Context::Symbol& Context::operator[](std::string const &name) {
+    Context *context{this};
     while (context) {
         auto it = context->symbols.find(name);
         if (it != context->symbols.end()) {
