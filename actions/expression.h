@@ -209,31 +209,6 @@ template <> struct action<grammar::ops::minus> {
     }
 };
 
-template <> struct action<grammar::ops::lshift> {
-    template <typename Input> static void apply(const Input &, Context &context) {
-        auto rhs = context.popExpression();
-        auto lhs = context.popExpression();
-        auto op = [](auto const& l, auto const& r) { return l<<r; };
-        if (rhs.type() == typeid(types::Integer) and rhs.type() == typeid(types::Integer)) {
-            detail::infix_helper<types::Integer, types::Integer>(context, std::move(lhs), std::move(rhs), op);
-        } else {
-            throw std::runtime_error("cannot apply operator<< to " + internal::demangle(lhs.type()) + " and " + internal::demangle(rhs.type()));
-        }
-    }
-};
-template <> struct action<grammar::ops::rshift> {
-    template <typename Input> static void apply(const Input &, Context &context) {
-        auto rhs = context.popExpression();
-        auto lhs = context.popExpression();
-        auto op = [](auto const& l, auto const& r) { return l>>r; };
-        if (rhs.type() == typeid(types::Integer) and rhs.type() == typeid(types::Integer)) {
-            detail::infix_helper<types::Integer, types::Integer>(context, std::move(lhs), std::move(rhs), op);
-        } else {
-            throw std::runtime_error("cannot apply operator>> to " + internal::demangle(lhs.type()) + " and " + internal::demangle(rhs.type()));
-        }
-    }
-};
-
 template <> struct action<grammar::ops::cmp_lt> {
     template <typename Input> static void apply(const Input &, Context &context) {
         auto rhs = context.popExpression();
@@ -296,37 +271,7 @@ template <> struct action<grammar::ops::cmp_neq> {
     }
 };
 
-template <> struct action<grammar::ops::amp> {
-    template <typename Input> static void apply(const Input &, Context &context) {
-        auto rhs = context.popExpression();
-        auto lhs = context.popExpression();
-        auto op = [](auto const& l, auto const& r) { return l&r; };
-        if (not detail::exact_infix_helper(context, lhs, rhs, op)) {
-            throw std::runtime_error("cannot apply operator& to " + internal::demangle(lhs.type()) + " and " + internal::demangle(rhs.type()));
-        }
-    }
-};
-template <> struct action<grammar::ops::hat> {
-    template <typename Input> static void apply(const Input &, Context &context) {
-        auto rhs = context.popExpression();
-        auto lhs = context.popExpression();
-        auto op = [](auto const& l, auto const& r) { return l^r; };
-        if (not detail::exact_infix_helper(context, lhs, rhs, op)) {
-            throw std::runtime_error("cannot apply operator^ to " + internal::demangle(lhs.type()) + " and " + internal::demangle(rhs.type()));
-        }
-    }
-};
-template <> struct action<grammar::ops::pipe> {
-    template <typename Input> static void apply(const Input &, Context &context) {
-        auto rhs = context.popExpression();
-        auto lhs = context.popExpression();
-        auto op = [](auto const& l, auto const& r) { return l|r; };
-        if (not detail::exact_infix_helper(context, lhs, rhs, op)) {
-            throw std::runtime_error("cannot apply operator| to " + internal::demangle(lhs.type()) + " and " + internal::demangle(rhs.type()));
-        }
-    }
-};
-template <> struct action<grammar::ops::damp> {
+template <> struct action<grammar::ops::op_and> {
     template <typename Input> static void apply(const Input &, Context &context) {
         auto rhs = context.popExpression();
         auto lhs = context.popExpression();
@@ -341,7 +286,7 @@ template <> struct action<grammar::ops::damp> {
         }
     }
 };
-template <> struct action<grammar::ops::dpipe> {
+template <> struct action<grammar::ops::op_or> {
     template <typename Input> static void apply(const Input &, Context &context) {
         auto rhs = context.popExpression();
         auto lhs = context.popExpression();

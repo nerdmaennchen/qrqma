@@ -42,9 +42,6 @@ struct percent : infix_op<pegtl::one<'%'>, 5> {};
 struct plus  : infix_op<pegtl::one<'+'>, 6> {};
 struct minus : infix_op<pegtl::one<'-'>, 6> {};
 
-struct lshift : infix_op<pegtl::two<60>, 7> {}; // <<
-struct rshift : infix_op<pegtl::two<62>, 7> {}; // >>
-
 struct cmp_lt  : infix_op<pegtl::one<60>, 8> {};        // <
 struct cmp_leq : infix_op<pegtl::string<60, 61>, 8> {}; // <=
 struct cmp_gt  : infix_op<pegtl::one<62>, 8> {};        // >
@@ -53,13 +50,8 @@ struct cmp_geq : infix_op<pegtl::string<62, 61>, 8> {}; // >=
 struct cmp_eq  : infix_op<pegtl::two<61>, 9> {};        // ==
 struct cmp_neq : infix_op<pegtl::string<33, 61>, 9> {}; // !=
 
-struct amp   : infix_op<pegtl::one<38>, 10>  {}; // &
-struct hat   : infix_op<pegtl::one<94>, 11>  {}; // ^
-struct pipe  : infix_op<pegtl::one<124>, 12> {}; // |
-struct damp  : infix_op<pegtl::sor<pegtl::two<38>, pegtl::keyword<'a', 'n', 'd'>>, 13>  {}; // &&, and
-struct dpipe : infix_op<pegtl::sor<pegtl::two<124>, pegtl::keyword<'o', 'r'>>, 14> {}; // ||, or
-
-struct comma_seq : infix_op<pegtl::one<44>, 17> {}; // ,
+struct op_and  : infix_op<pegtl::sor<pegtl::two<38>, pegtl::keyword<'a', 'n', 'd'>>, 13>  {}; // &&, and
+struct op_or : infix_op<pegtl::sor<pegtl::two<124>, pegtl::keyword<'o', 'r'>>, 14> {}; // ||, or
 
 struct braced_expression : pegtl::if_must< pegtl::one<'('>, expression, pegtl::one<')'> > {};
 
@@ -70,15 +62,10 @@ template<> struct lhs_term< 3> : pegtl::sor<ops::unary_plus, ops::unary_minus, o
 template<> struct infix_term< 4> : pegtl::failure {};
 template<> struct infix_term< 5> : pegtl::sor<infix_term<4>, ops::star, ops::fslash, ops::percent> {};
 template<> struct infix_term< 6> : pegtl::sor<infix_term<5>, ops::plus, ops::minus> {};
-template<> struct infix_term< 7> : pegtl::sor<infix_term<6>, ops::lshift, ops::rshift> {};
 template<> struct infix_term< 8> : pegtl::sor<infix_term<7>, ops::cmp_lt, ops::cmp_leq, ops::cmp_gt, ops::cmp_geq> {};
 template<> struct infix_term< 9> : pegtl::sor<infix_term<8>, ops::cmp_eq, ops::cmp_neq> {};
-template<> struct infix_term<10> : pegtl::sor<infix_term<9>, ops::amp> {};
-template<> struct infix_term<11> : pegtl::sor<infix_term<10>, ops::hat> {};
-template<> struct infix_term<12> : pegtl::sor<infix_term<11>, ops::pipe> {};
-template<> struct infix_term<13> : pegtl::sor<infix_term<12>, ops::damp> {};
-template<> struct infix_term<14> : pegtl::sor<infix_term<13>, ops::dpipe> {};
-template<> struct infix_term<17> : pegtl::sor<ops::comma_seq, infix_term<16>> {};
+template<> struct infix_term<13> : pegtl::sor<infix_term<12>, ops::op_and> {};
+template<> struct infix_term<14> : pegtl::sor<infix_term<13>, ops::op_or> {};
 
 struct infix_expression : infix_term<17> {};
 }
