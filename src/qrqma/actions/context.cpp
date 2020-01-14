@@ -22,8 +22,8 @@ Context::Symbol const& Context::operator[](std::string const &name) const {
             return it->second;
         }
         context = context->parent;
-    }
-    throw std::runtime_error("no symbol with name \"" + name + "\" provided!");
+    };
+    return symbol::the_undefined_symbol;
 }
 symbol::Symbol const* Context::getSymbol(std::string const &name) const {
     Context const *context{this};
@@ -116,10 +116,10 @@ Context::ConverterFunc Context::convert(std::type_info const& from, std::type_in
         return [](std::any const& a) { return a; };
     }
 
-    if (from == typeid(void)) {
+    if (from == typeid(types::LazyEvaluate)) {
         // if the type is not known yet
         return [&to](std::any const& a) {
-            if (a.type() == typeid(void)) { // cannot convert anything during runtime from void
+            if (a.type() == typeid(types::LazyEvaluate)) { // cannot convert anything during runtime from void
                 throw std::runtime_error("cannot (runtime) convert from void to " + internal::demangle(to));
             }
             return convert(a.type(), to)(a);
@@ -161,6 +161,8 @@ Context::ConverterFunc Context::convert(std::type_info const& from, std::type_in
             return [](std::any const& a) { return static_cast<types::Bool>(std::any_cast<types::Integer>(a)); };
         } else if (typeid(types::Float) == from) {
             return [](std::any const& a) { return static_cast<types::Bool>(std::any_cast<types::Float>(a)); };
+        } else if (typeid(symbol::Undefined) == from) {
+            return [](std::any const&) { return false; };
         }
     }
     throw std::runtime_error("dont know how to create a converter from type " + internal::demangle(from) + " to " + internal::demangle(to));
