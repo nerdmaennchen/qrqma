@@ -7,7 +7,7 @@ CXX     ?= $(CROSS_COMPILE_PREFIX)g++
 SIZE    ?= $(CROSS_COMPILE_PREFIX)size
 
 SRC_FOLDERS = src/
-LIBS = c pthread yaml-cpp jsoncpp
+LIBS = c
 LIB_PATHS =
 INCLUDES = src/
 
@@ -20,11 +20,11 @@ LIB_PATH_CMD = $(addprefix -L, $(LIB_PATHS))
 
 # Flags
 
-DEFINES		+= -D_FILE_OFFSET_BITS=64 -DDUK_USE_CPP_EXCEPTIONS
+DEFINES		+=
 
 FP_FLAGS       ?=
 COMMON_FLAGS	+= $(DEFINES) $(FP_FLAGS)
-COMMON_FLAGS	+= -O0 -g3
+COMMON_FLAGS	+= -O0
 COMMON_FLAGS	+= $(INCLUDE_CMD)
 
 #COMMON_FLAGS    += -fsanitize=address
