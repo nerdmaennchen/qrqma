@@ -22,7 +22,9 @@ using Renderable = unique_func<RenderOutput()>;
 using Block = std::variant<StaticText, Renderable>;
 using BlockTable = std::map<std::string, Block>;
 
+struct Undefined {};
 using Symbol = std::any;
+inline Symbol the_undefined_symbol = Symbol{Undefined{}};
 using SymbolTable = std::map<std::string, Symbol>;
 
 struct Function {

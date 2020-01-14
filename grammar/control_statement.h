@@ -25,16 +25,33 @@ struct control_statement_token
                               pegtl::if_must<pegtl::seq<padded<Token>, padded<R>...>>>> {};
 
 struct if_token : pegtl::keyword<'i', 'f'> {};
-struct if_statement         : control_statement_token<if_token , expression> {};
+
+struct conditional_statement : pegtl::seq<expression> {};
+struct if_statement         : control_statement_token<if_token , conditional_statement> {};
+
 struct if_content           : pegtl::seq<pegtl::success, grammar> {};
 
 struct else_statement       : control_statement_token<pegtl::keyword<'e', 'l', 's', 'e'>> {};
 struct else_content         : pegtl::seq<pegtl::success, grammar> {};
 
+struct elif_token : pegtl::keyword<'e', 'l', 'i', 'f'> {};
+struct elif_statement       : control_statement_token<elif_token , conditional_statement> {};
+struct elif_control_statement;
+
+struct else_control_statement : pegtl::sor<
+    pegtl::if_must<else_statement, else_content>,
+    elif_control_statement> {};
+
+struct elif_control_statement : pegtl::if_must<
+    elif_statement, 
+    if_content, 
+    pegtl::opt<else_control_statement>
+    > {};
+
 struct if_control_statement : pegtl::if_must<
     if_statement, 
     if_content, 
-    pegtl::opt<else_statement, else_content>, 
+    pegtl::opt<else_control_statement>, 
     control_statement_token<pegtl::keyword<'e', 'n', 'd', 'i', 'f'>>
     > {};
 

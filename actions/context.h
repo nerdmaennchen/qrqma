@@ -19,9 +19,9 @@ struct Context {
     using RenderOutput = symbol::RenderOutput;
     using Renderable = symbol::Renderable;
     using Block = symbol::Block;
-    struct Stop {};
+    struct StopToken {};
     
-    using Token = std::variant<StaticText, Renderable, Stop>;
+    using Token = std::variant<StaticText, Renderable, StopToken>;
 
     using SymbolTable = symbol::SymbolTable;
     using BlockTable  = symbol::BlockTable;

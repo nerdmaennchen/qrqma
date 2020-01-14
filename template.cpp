@@ -23,7 +23,7 @@ namespace pegtl = tao::pegtl;
 Template::Template(std::string_view input, symbol::SymbolTable symbols, TemplateLoader loader, symbol::BlockTable blocks)
     : pimpl{std::make_unique<Pimpl>(std::move(symbols), std::move(loader), std::move(blocks))} 
 {
-    pegtl::parse<pegtl::seq<grammar::grammar, pegtl::eof>, actions::action>(
+    pegtl::parse<pegtl::if_must<grammar::grammar, pegtl::eof>, actions::action>(
         pegtl::memory_input{input, ""}, 
         pimpl->context
     );

@@ -31,8 +31,9 @@ template <> struct action<grammar::if_control_statement> : pegtl::change_states<
         });
     }
 };
+template <> struct action<grammar::elif_control_statement> : action<grammar::if_control_statement> {};
 
-template <> struct action<grammar::if_statement> : pegtl::change_states<Context> {
+template <> struct action<grammar::conditional_statement> : pegtl::change_states<Context> {
     template< typename Rule, pegtl::apply_mode A, pegtl::rewind_mode M, template< typename... > class Action, template< typename... > class Control, typename Input>
     [[nodiscard]] static bool match( Input& in, Context& outerC, Context&, Context&)
     {
@@ -54,7 +55,7 @@ template <> struct action<grammar::if_content> : pegtl::change_states<Context> {
     static void success(const Input &, Context&) { }
 };
 
-template <> struct action<grammar::else_content> : pegtl::change_states<Context> {
+template <> struct action<grammar::else_control_statement> : pegtl::change_states<Context> {
     template< typename Rule, pegtl::apply_mode A, pegtl::rewind_mode M, template< typename... > class Action, template< typename... > class Control, typename Input>
     [[nodiscard]] static bool match( Input& in, Context&, Context&, Context& elseC)
     {
