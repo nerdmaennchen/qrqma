@@ -1,7 +1,9 @@
 # QRQMA
 qrqma is a C++ implementaion of [Jinja](https://jinja.palletsprojects.com/) templates that tries to go as far as possible to reach Jinja's flexibility while retaining as much C++ mentality as possible.
+qrqma should not be considdered complete or ready for productive use, yet!
+It's still missing plenty of features.
 
-Plenty of this documentation is taken from the [Jinja documentation](https://jinja.palletsprojects.com/).
+Most of this documentation is taken from the [Jinja documentation](https://jinja.palletsprojects.com/).
 If you love Jinja but miss using it from C++, you might love qrqma as well.
 
 The motivation behind qrqma is to bring the ease of dynamic content generation from Jinja (or django) to the world of C++.
