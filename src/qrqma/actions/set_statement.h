@@ -18,7 +18,12 @@ template <> struct action<grammar::set_control_statement> : pegtl::change_states
     template <typename Input> 
     static void success(const Input &, std::string &symbol_name, Context& context) {
         auto e = context.popExpression();
-        context.setSymbol(symbol_name, e.eval_f());
+        auto& sym = context[symbol_name];
+        if (sym.type() == typeid(types::Undefined)) {
+            context.setSymbol(symbol_name, e.eval_f());
+        } else {
+            sym = e.eval_f();
+        }
     }
 };
 
