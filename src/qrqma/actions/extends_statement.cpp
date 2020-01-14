@@ -9,21 +9,21 @@ namespace actions {
 namespace pegtl = tao::pegtl;
 
 
-void action<grammar::extends_control_statement>::success(Context& inner_ctx, Context &outer_ctx) {
-    auto name = outer_ctx.popExpression().eval<types::String>();
-    Context const* rootC = &outer_ctx;
-    while (rootC->parentContext()) {
-        rootC = rootC->parentContext();
-    }
-    auto loader = rootC->getTemplateLoader();
+void action<grammar::extends_control_statement>::apply(Context& context) {
+    auto name = context.popExpression().eval<types::String>();
     
-    Context::SymbolTable symbols = inner_ctx.getSymbolTable();
-    for (auto const& [k, v] : outer_ctx.getSymbolTable()) {
-        symbols.emplace(k, v);
-    }
-    Context::BlockTable blocks = inner_ctx.popBlockTable();
-    outer_ctx.addToken([templ = Template(loader(name), symbols, loader, std::move(blocks))]() -> std::string {
-        return templ();
+    Context* rootC = &context;
+    while (rootC->parentContext()) { rootC = rootC->parentContext(); }
+    context.addToken([templ = std::optional<Template>{}, name=std::move(name), rootC]() mutable -> Context::RenderOutput {
+        if (not templ) {
+            Context::SymbolTable symbols = rootC->getSymbolTable();
+            Context::BlockTable blocks = rootC->popBlockTable();
+            auto loader = rootC->getTemplateLoader();
+
+            templ.emplace(loader(name), symbols, loader, std::move(blocks));
+        }
+
+        return {(*templ)(), true};
     });
 }
 

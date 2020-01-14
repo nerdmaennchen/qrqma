@@ -55,18 +55,17 @@ struct for_control_statement : pegtl::seq<
 
 
 struct extends_token : pegtl::keyword<'e', 'x', 't', 'e', 'n', 'd', 's'> {};
-struct extends_statement : control_statement_token<extends_token , string_literal> {};
-struct extends_body : pegtl::seq<pegtl::success, grammar> {};
-struct extends_control_statement : pegtl::seq<extends_statement, extends_body> {};
+struct extends_control_statement : control_statement_token<extends_token , string_literal> {};
 
 struct block_token : pegtl::keyword<'b', 'l', 'o', 'c', 'k'> {};
 struct block_content : pegtl::seq<pegtl::success, grammar> {};
 struct block_identifier : identifier {};
+struct block_end_identifier : identifier {};
 struct block_statement : control_statement_token<block_token, block_identifier> {};
 struct block_control_statement : pegtl::seq<
     block_statement, 
     block_content,
-    control_statement_token<pegtl::keyword<'e', 'n', 'd', 'b', 'l', 'o', 'c', 'k'>, pegtl::star<pegtl::any> > 
+    control_statement_token<pegtl::keyword<'e', 'n', 'd', 'b', 'l', 'o', 'c', 'k'>, pegtl::opt<block_end_identifier> >
     > {};
 
 struct block_control_statement_outer   : control_statement_outer<block_token, block_control_statement> {};

@@ -42,7 +42,7 @@ template <> struct action<grammar::for_control_statement> : pegtl::change_states
             if (symbol_names.size() != 1) {
                 throw std::runtime_error("cannot broadcast list items into multiple identifiers: \"" + std::string{marker, std::size_t(in.current()-marker)} + "\"");
             }
-            outer_context.addToken([it = std::move(iterable), symName=std::move(symbol_names[0]), &inner_context]{
+            outer_context.addToken([it = std::move(iterable), symName=std::move(symbol_names[0]), &inner_context]() -> Context::RenderOutput {
                 auto l = it.eval<symbol::List>();
                 std::string ret;
                 
@@ -62,18 +62,22 @@ template <> struct action<grammar::for_control_statement> : pegtl::change_states
 
                     inner_context.setSymbol(symName, i);
             
-                    ret += inner_context();
+                    auto ro = inner_context();
+                    ret += ro.rendered;
+                    if (ro.stop_rendering_flag) {
+                        return {ret, true};
+                    }
 
                     itCounter++;
                 }
 
-                return ret;
+                return {ret, false};
             });
         } else if (iterable.type() == typeid(symbol::Map)) {
             if (symbol_names.size() > 2) {
                 throw std::runtime_error("cannot broadcast list items into more than two identifiers: \"" + std::string{marker, std::size_t(in.current()-marker)} + "\"");
             }
-            outer_context.addToken([it = std::move(iterable), symbol_names=std::move(symbol_names), &inner_context]{
+            outer_context.addToken([it = std::move(iterable), symbol_names=std::move(symbol_names), &inner_context]() -> Context::RenderOutput {
                 auto m = it.eval<symbol::Map>();
                 std::string ret;
                 
@@ -96,12 +100,15 @@ template <> struct action<grammar::for_control_statement> : pegtl::change_states
                         inner_context.setSymbol(symbol_names[1], it->second);
                     }
             
-                    ret += inner_context();
-
+                    auto ro = inner_context();
+                    ret += ro.rendered;
+                    if (ro.stop_rendering_flag) {
+                        return {ret, true};
+                    }
                     itCounter++;
                 }
 
-                return ret;
+                return {ret, false};
             });
         }
     }

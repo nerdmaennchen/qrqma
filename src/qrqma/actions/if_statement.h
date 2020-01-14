@@ -23,7 +23,7 @@ template <> struct action<grammar::if_control_statement> : pegtl::change_states<
             return std::any_cast<types::Bool>(c(e.eval_f()));
         };
         
-        outerC.addToken([test=std::move(test), &ifC, &elseC]() -> std::string {
+        outerC.addToken([test=std::move(test), &ifC, &elseC]() -> Context::RenderOutput {
             if (test()) {
                 return ifC();
             }

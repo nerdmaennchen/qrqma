@@ -18,8 +18,8 @@ struct action<grammar::print_expression> {
         auto const& from_type = expression.type();
         context.addToken([
             expression=std::move(expression), 
-            converter = context.convert(from_type, typeid(std::string))] {
-            return std::any_cast<std::string>(converter(expression.eval_f()));
+            converter = context.convert(from_type, typeid(std::string))]() -> Context::RenderOutput  {
+            return {std::any_cast<std::string>(converter(expression.eval_f())), false};
         });
     }
 };
