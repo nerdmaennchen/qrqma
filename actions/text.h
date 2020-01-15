@@ -1,10 +1,12 @@
 #pragma once
 
 #include "context.h"
-#include "../grammar/grammar.h"
 
 
 namespace qrqma {
+namespace grammar {
+struct text;
+}
 namespace actions {
 
 template <> struct action<grammar::text> {

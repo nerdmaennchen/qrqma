@@ -6,9 +6,6 @@
 namespace qrqma {
 namespace actions {
 
-namespace pegtl = tao::pegtl;
-
-
 void action<grammar::extends_control_statement>::apply(Context& context) {
     auto name = context.popExpression().eval<types::String>();
     

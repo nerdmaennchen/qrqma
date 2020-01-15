@@ -1,13 +1,22 @@
 #pragma once
 
 #include "context.h"
-#include "overloaded.h"
-#include "../grammar/grammar.h"
+#include "../tao/pegtl.hpp"
 
 namespace qrqma {
+
+namespace grammar {
+struct block_control_statement;
+struct block_identifier;
+struct block_content;   
+}
+
 namespace actions {
 
 namespace pegtl = tao::pegtl;
+
+template<typename Rule> 
+struct action;
 
 template <> struct action<grammar::block_control_statement> : pegtl::change_states<std::string, Context> {
     template< typename Rule, pegtl::apply_mode A, pegtl::rewind_mode M, template< typename... > class Action, template< typename... > class Control, typename Input>
@@ -15,21 +24,10 @@ template <> struct action<grammar::block_control_statement> : pegtl::change_stat
         return pegtl::change_states<std::string, Context>::match< Rule, A, M, Action, Control >(std::make_index_sequence<2>{}, in, std::string{}, oldC.childContext(), oldC );
     }
 
-    template <typename Input> 
+    static void success(std::string& block_name, Context& inner_ctx, Context& outer_ctx);
+    template <typename Input>
     static void success(const Input &, std::string& block_name, Context& inner_ctx, Context& outer_ctx) {
-        auto renderFunc = [&inner_ctx](){
-            return inner_ctx();
-        };
-
-        outer_ctx.setBlock(block_name, renderFunc);
-        outer_ctx.addToken([&outer_ctx, block_name=std::move(block_name)]{
-            return std::visit(detail::overloaded{
-                    [](Context::StaticText const &t) -> Context::RenderOutput { return {t, false}; },
-                    [](Context::Renderable const &c) -> Context::RenderOutput { return c(); },
-                    [](auto const&) -> Context::RenderOutput { return {"", true}; }},
-                outer_ctx.getBlock(block_name)
-            );
-        });
+        success(block_name, inner_ctx, outer_ctx);
     }
 };
 
