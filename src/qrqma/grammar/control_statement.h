@@ -9,8 +9,10 @@ namespace pegtl = tao::pegtl;
 
 struct grammar;
 
-struct control_statement_o_brackets : pegtl::string<123, 37> {}; // {%
-struct control_statement_c_brackets : pegtl::string<37, 125> {}; // %}
+struct control_statement_o_brackets_raw : pegtl::string<123, 37> {}; // {%
+struct control_statement_c_brackets_raw : pegtl::string<37, 125> {}; // %}
+struct control_statement_o_brackets : pegtl::sor<control_statement_o_brackets_raw, pegtl::seq<spaces, control_statement_o_brackets_raw, pegtl::one<'-'>>> {};
+struct control_statement_c_brackets : pegtl::sor<control_statement_c_brackets_raw, pegtl::seq<pegtl::one<'-'>, control_statement_c_brackets_raw, spaces>> {};
 
 template<typename Token, typename Rule>
 struct control_statement_outer : pegtl::if_must<
