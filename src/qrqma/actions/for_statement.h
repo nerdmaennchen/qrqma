@@ -1,19 +1,28 @@
 #pragma once
 
 #include "context.h"
-#include "../grammar/grammar.h"
+#include "../tao/pegtl.hpp"
 
 #include <vector>
 #include <string_view>
 
 namespace qrqma {
+
+namespace grammar {
+
+struct for_control_statement;
+
+}
+
 namespace actions {
+
+namespace detail {
+using SymbolList = std::vector<std::string>;
+}
 
 namespace pegtl = tao::pegtl;
 
-using SymbolList = std::vector<std::string>;
-
-template <> struct action<grammar::for_control_statement> : pegtl::change_states<SymbolList, Context, Context> {
+template <> struct action<grammar::for_control_statement> : pegtl::change_states<detail::SymbolList, Context, Context> {
     template< typename Rule, pegtl::apply_mode A, pegtl::rewind_mode M, template< typename... > class Action, template< typename... > class Control, typename Input>
     [[nodiscard]] static bool match( Input& in, Context& context)
     {
@@ -21,22 +30,20 @@ template <> struct action<grammar::for_control_statement> : pegtl::change_states
         auto& inner_context = context.childContext();
 
         inner_context.setSymbol("loop.length",    types::Integer{});
-        
         inner_context.setSymbol("loop.index0",    types::Integer{});
         inner_context.setSymbol("loop.index",     types::Integer{});
         inner_context.setSymbol("loop.revindex0", types::Integer{});
         inner_context.setSymbol("loop.revindex",  types::Integer{});
         inner_context.setSymbol("loop.first",     types::Bool{});
         inner_context.setSymbol("loop.last",      types::Bool{});
-
         inner_context.setSymbol("loop.previtem", {});
         inner_context.setSymbol("loop.nextitem", {});
 
-        return pegtl::change_states<SymbolList, Context, Context>::match< Rule, A, M, Action, Control >(std::make_index_sequence<3>{}, in, SymbolList{}, context.childContext(), inner_context, context, marker);
+        return pegtl::change_states<detail::SymbolList, Context, Context>::match< Rule, A, M, Action, Control >(std::make_index_sequence<3>{}, in, detail::SymbolList{}, context.childContext(), inner_context, context, marker);
     }
 
     template <typename Input> 
-    static void success(const Input &in, SymbolList &symbol_names, Context &container_ctx, Context &inner_context, Context &outer_context, char const* marker) {
+    static void success(const Input &in, detail::SymbolList &symbol_names, Context &container_ctx, Context &inner_context, Context &outer_context, char const* marker) {
         auto iterable = container_ctx.popExpression();
         if (iterable.type() == typeid(symbol::List)) {
             if (symbol_names.size() != 1) {
@@ -116,7 +123,7 @@ template <> struct action<grammar::for_control_statement> : pegtl::change_states
 
 template <> struct action<grammar::for_identifier> {
     template <typename Input> 
-    static void apply(const Input &in, SymbolList &symbol_names, Context&, Context& inner_context) {
+    static void apply(const Input &in, detail::SymbolList &symbol_names, Context&, Context& inner_context) {
         auto name = in.string();
         inner_context.setSymbol(name, {});
         symbol_names.emplace_back(in.string());
@@ -124,7 +131,7 @@ template <> struct action<grammar::for_identifier> {
 };
 template <> struct action<grammar::for_container_identifier> : pegtl::change_states<Context> {
     template< typename Rule, pegtl::apply_mode A, pegtl::rewind_mode M, template< typename... > class Action, template< typename... > class Control, typename Input>
-    [[nodiscard]] static bool match( Input& in, SymbolList&, Context& container_context, Context&) 
+    [[nodiscard]] static bool match( Input& in, detail::SymbolList&, Context& container_context, Context&) 
     {
         return pegtl::change_states<Context>::match< Rule, A, M, Action, Control >(std::make_index_sequence<1>{}, in, container_context);
     }
@@ -136,7 +143,7 @@ template <> struct action<grammar::for_container_identifier> : pegtl::change_sta
 
 template <> struct action<grammar::for_content> : pegtl::change_states<Context> {
     template< typename Rule, pegtl::apply_mode A, pegtl::rewind_mode M, template< typename... > class Action, template< typename... > class Control, typename Input>
-    [[nodiscard]] static bool match( Input& in, SymbolList&, Context&, Context& inner_context)
+    [[nodiscard]] static bool match( Input& in, detail::SymbolList&, Context&, Context& inner_context)
     {
         return pegtl::change_states<Context>::match< Rule, A, M, Action, Control >(std::make_index_sequence<1>{}, in, inner_context );
     }

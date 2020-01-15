@@ -1,15 +1,15 @@
 #pragma once
 
 #include "context.h"
-#include "../grammar/grammar.h"
-
 #include <vector>
 #include <string_view>
 
 namespace qrqma {
-namespace actions {
+namespace grammar {
+struct extends_control_statement;
+}
 
-namespace pegtl = tao::pegtl;
+namespace actions {
 
 template <typename Rule> 
 struct action;

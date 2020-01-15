@@ -1,12 +1,22 @@
 #pragma once
 
 #include "context.h"
-#include "../grammar/grammar.h"
+
+#include "../tao/pegtl.hpp"
 
 namespace qrqma {
+namespace grammar {
+struct set_control_statement;
+struct set_identifier;
+struct set_expression;
+}
+
 namespace actions {
 
 namespace pegtl = tao::pegtl;
+
+template<typename Rule> 
+struct action;
 
 template <> struct action<grammar::set_control_statement> : pegtl::change_states<std::string, Context> {
     template< typename Rule, pegtl::apply_mode A, pegtl::rewind_mode M, template< typename... > class Action, template< typename... > class Control, typename Input>
@@ -15,15 +25,10 @@ template <> struct action<grammar::set_control_statement> : pegtl::change_states
         return pegtl::change_states<std::string, Context>::match< Rule, A, M, Action, Control >(std::make_index_sequence<2>{}, in, std::string{}, context );
     }
 
+    static void success(std::string &symbol_name, Context& context);
     template <typename Input> 
     static void success(const Input &, std::string &symbol_name, Context& context) {
-        auto e = context.popExpression();
-        auto& sym = context[symbol_name];
-        if (sym.type() == typeid(types::Undefined)) {
-            context.setSymbol(symbol_name, e.eval_f());
-        } else {
-            sym = e.eval_f();
-        }
+        success(symbol_name, context);
     }
 };
 
