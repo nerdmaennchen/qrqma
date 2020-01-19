@@ -68,7 +68,8 @@ Look for [demo.cpp](https://github.com/nerdmaennchen/qrqma/blob/demo/src/demo.cp
 - Macros (and Call)
 - Loop-else blocks
 - namespace objects
-
+- inline if
+  
 # Getting Started
 
 To use qrqma in you C++ project the easiest way is to simply copy the qrqma sources into your project source directory and you're set.
@@ -335,15 +336,15 @@ The if statement in qrqma is comparable with the Jinja if statement. In the simp
 {% endif %}
 ~~~
 
-You can use more complex Expressions there, too:
+For multiple branches, elif and else can be used like in Python. You can use more complex Expressions there, too:
+
 ~~~
 {% if kenny.sick %}
     Kenny is sick.
-{% else %}{% if kenny.dead %}
+{% elif kenny.dead %}
     You killed Kenny!  You bastard!!!
 {% else %}
     Kenny looks okay --- so far
-{% endif %}
 {% endif %}
 ~~~
 
