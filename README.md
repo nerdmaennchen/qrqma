@@ -1,2 +1,1 @@
-# qrqma
-Jinja templates for C++
+src/qrqma/README.md
