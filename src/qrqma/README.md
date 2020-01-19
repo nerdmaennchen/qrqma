@@ -57,7 +57,7 @@ int main() {
 ~~~
 
 More examples can be visited in the demo branch!
-Look for (demo.cpp)[https://github.com/nerdmaennchen/qrqma/blob/demo/src/demo.cpp] and (qrqma_test.cpp)[https://github.com/nerdmaennchen/qrqma/blob/demo/src/qrqma_test.cpp].
+Look for [demo.cpp](https://github.com/nerdmaennchen/qrqma/blob/demo/src/demo.cpp) and [qrqma_test.cpp](https://github.com/nerdmaennchen/qrqma/blob/demo/src/qrqma_test.cpp).
 
 # Missing in qrqma
 
