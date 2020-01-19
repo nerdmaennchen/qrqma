@@ -29,7 +29,7 @@ void Context::setSymbol(std::string const& name, ExpressionPtr symbol) {
 
 Context::Block const& Context::getBlock(std::string const &name) const {
     Context const *context{this};
-    Context::Block const* block;
+    Context::Block const* block{};
     while (context) {
         auto it = context->blocks.find(name);
         if (it != context->blocks.end()) {
