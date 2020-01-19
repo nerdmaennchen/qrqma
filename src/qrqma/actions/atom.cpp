@@ -1,80 +1,132 @@
 #include "atom.h"
+#include "convert.h"
+
+#include "../overloaded.h"
+#include "types.h"
 
 #include <string>
 #include <cstdint>
 #include <sstream>
 #include <utility>
 
+#include <algorithm>
+
 namespace qrqma {
 namespace actions {
 
-void action<grammar::string_literal>::apply(const std::string &in, Context &context) {
+void action<grammar::string_literal>::apply(const std::string &in, ContextP &context) {
     std::string s{in.data() + 1, in.size() - 2}; // the string without the quotation marks;
-    context.pushExpression(
-        typeid(std::string),
-        [s = std::move(s)]{
-            return s;
-        }
-    );
+    context->pushExpression(types::ConstantExpression{ [s = std::move(s)]{ return s; }});
 }
 
-void action<grammar::integer>::apply(const std::string &in, Context &context) {
+void action<grammar::integer>::apply(const std::string &in, ContextP &context) {
     types::Integer num{};
     std::stringstream{in} >> num;
-    context.pushExpression(
-        typeid(num),
-        [num = std::move(num)]{
-            return num;
-        }
-    );
+    context->pushExpression(types::ConstantExpression{[num = std::move(num)]{ return num; }});
 }
 
-void action<grammar::float_num>::apply(const std::string &in, Context &context) {
+void action<grammar::float_num>::apply(const std::string &in, ContextP &context) {
     types::Float num{};
     std::stringstream{in} >> num;
-    context.pushExpression(
-        typeid(num),
-        [num = std::move(num)]{
-            return num;
+    context->pushExpression(types::ConstantExpression{[num = std::move(num)]{ return num; }});
+}
+
+void action<grammar::bool_true>::apply(const std::string&, ContextP &context) {
+    context->pushExpression(types::ConstantExpression{[]{ return true; }});
+}
+void action<grammar::bool_false>::apply(const std::string&, ContextP &context) {
+    context->pushExpression(types::ConstantExpression{[]{ return false; }});
+}
+
+void action<grammar::identifier>::apply(const std::string &in, ContextP &context) {
+    auto value = (*context)[in];
+    if (value) {
+        context->pushExpression(std::visit(detail::overloaded{
+            [value](types::ConstantExpression& ce) -> types::Expression {
+                return types::ConstantExpression{[val=ce.eval()] { return val; }};
+            },
+            [value](types::NonconstantExpression&) -> types::Expression {
+                return types::NonconstantExpression{[value] { // capture "value" (a shared_ptr) here
+                    return std::visit([](auto&& expr) { return expr.eval(); }, *value);
+                }};
+            }
+        }, *value));
+    } else {
+        // delayed evaluation
+        context->pushExpression(types::NonconstantExpression{[c=context.get(), in]() {
+            auto v = (*c)[in];
+            if (not v) {
+                return std::any{};
+            }
+            return std::visit([](auto&& expr) { return expr.eval(); }, *v);
+        }});
+    }
+}
+
+void action<grammar::atom_list>::success(ContextP& inner_context, ContextP& outer_context) {
+    auto items = inner_context->popAllExpressions();
+    bool allConstant = std::all_of(begin(items), end(items), [](auto const& e) { return std::holds_alternative<types::ConstantExpression>(e); });
+
+    if (allConstant) {
+        types::List l;
+        for (auto& e : items) {
+            l.emplace_back(std::visit([](auto const& expr) -> types::Value {
+                return expr.eval();
+            }, e));
         }
-    );
-}
-
-void action<grammar::bool_true>::apply(const std::string&, Context &context) {
-    context.pushExpression( typeid(true), []{ return true; } );
-}
-void action<grammar::bool_false>::apply(const std::string&, Context &context) {
-    context.pushExpression( typeid(false), []{ return false; } );
-}
-
-void action<grammar::identifier>::apply(const std::string &in, Context &context) {
-    auto const& s = context[in];
-    context.pushExpression(s.type(), [&s] {
-        return s;
-    });
-}
-
-void action<grammar::atom_list>::success(Context& inner_context, Context& outer_context) {
-    symbol::List l;
-    for (auto const& e : inner_context.popAllExpressions()) {
-        l.emplace_back(e.eval_f());
+        outer_context->pushExpression(types::ConstantExpression{[l = std::move(l)] {
+            return l;
+        }});
+    } else {
+        outer_context->pushExpression(types::NonconstantExpression{[items = std::move(items)]{
+            types::List l;
+            for (auto& e : items) {
+                l.emplace_back(std::visit([](auto const& expr) -> types::Value {
+                    return expr.eval();
+                }, e));
+            }
+            return l;
+        }});
     }
-    outer_context.pushExpression(typeid(l), [l = std::move(l)]{
-        return l;
-    });
 }
 
-void action<grammar::atom_map>::success(Context& inner_context, Context& outer_context) {
-    symbol::Map m;
-    auto expressions = inner_context.popAllExpressions();
-    for (auto k_it=expressions.begin(); k_it != expressions.end(); k_it+=2) {
-        auto v_it = std::next(k_it);
-        auto c = outer_context.convert(k_it->type(), typeid(types::String));
-        m.emplace(std::any_cast<types::String>(c(k_it->eval_f())), v_it->eval_f());
+void action<grammar::atom_map>::success(ContextP& inner_context, ContextP& outer_context) {
+    auto items = inner_context->popAllExpressions();
+    bool allConstant = std::all_of(begin(items), end(items), [](auto const& e) { return std::holds_alternative<types::ConstantExpression>(e); });
+
+    if (allConstant) {
+        types::Map m;
+        for (auto k_it=items.begin(); k_it != items.end(); std::advance(k_it, 2)) {
+            auto v_it = std::next(k_it);
+            std::string key = std::visit([&](auto const& expr) -> std::string {
+                auto key = expr.eval();
+                return convert<std::string>(key);
+            }, *k_it);
+            std::any val = std::visit([](auto const& expr) -> std::any {
+                return expr.eval();
+            }, *v_it);
+            m.emplace(std::move(key), std::move(val));
+        }
+        outer_context->pushExpression(types::ConstantExpression{[m = std::move(m)] {
+            return m;
+        }});
+    } else {
+        outer_context->pushExpression(types::NonconstantExpression{[items=std::move(items), &outer_context] {
+            types::Map m;
+            for (auto k_it=items.begin(); k_it != items.end(); std::advance(k_it, 2)) {
+                auto v_it = std::next(k_it);
+                std::string key = std::visit([&](auto const& expr) -> std::string {
+                    auto key = expr.eval();
+                    return convert<std::string>(key);
+                }, *k_it);
+                std::any val = std::visit([](auto const& expr) -> std::any {
+                    return expr.eval();
+                }, *v_it);
+                m.emplace(std::move(key), std::move(val));
+            }
+            return m;
+        }});
     }
-    outer_context.pushExpression(typeid(m), [m = std::move(m)]{
-        return m;
-    });
 }
 
 } // namespace actions

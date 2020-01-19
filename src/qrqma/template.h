@@ -16,7 +16,7 @@ struct Template {
     
     ~Template();
 
-    std::string operator()() const;
+    std::string operator()(symbol::SymbolTable symbols={}) const;
 
   private:
     struct Pimpl;

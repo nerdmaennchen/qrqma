@@ -27,8 +27,9 @@ struct prefix_unary_op : pegtl::seq<op_sep, spaces, lhs_term<precedence>> {};
 template<typename rule>
 struct try_match : pegtl::if_must<pegtl::at<rule>, rule> {};
 
+struct call_identifier : identifier {};
 struct arg_list : pegtl::opt<pegtl::list<expression, pegtl::one<','>>> {};
-struct call  : try_match<pegtl::seq<identifier, spaces, pegtl::one<'('>, arg_list, pegtl::one<')'> > > {};
+struct call  : try_match<pegtl::seq<call_identifier, spaces, pegtl::one<'('>, arg_list, pegtl::one<')'> > > {};
 struct index : try_match<pegtl::seq<identifier, spaces, pegtl::one<'['>, expression, pegtl::one<']'> > > {};
 
 struct unary_plus  : prefix_unary_op<pegtl::one<'+'>, 3> {};

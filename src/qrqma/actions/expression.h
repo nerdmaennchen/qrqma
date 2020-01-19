@@ -32,106 +32,106 @@ template <typename Rule>
 struct action;
 
 template <> struct action<grammar::ops::unary_minus> {
-    static void apply(Context &context);
-    template <typename Input> static void apply(const Input &, Context &context) {
+    static void apply(ContextP &context);
+    template <typename Input> static void apply(const Input &, ContextP &context) {
         apply(context);
     }
 };
 
 template <> struct action<grammar::ops::unary_not> {
-    static void apply(Context &context);
-    template <typename Input> static void apply(const Input &, Context &context) {
+    static void apply(ContextP &context);
+    template <typename Input> static void apply(const Input &, ContextP &context) {
         apply(context);
     }
 };
 
 template <> struct action<grammar::ops::star> {
-    static void apply(Context &context);
-    template <typename Input> static void apply(const Input &, Context &context) {
+    static void apply(ContextP &context);
+    template <typename Input> static void apply(const Input &, ContextP &context) {
         apply(context);
     }
 };
 
 template <> struct action<grammar::ops::fslash> {
-    static void apply(Context &context);
-    template <typename Input> static void apply(const Input &, Context &context) {
+    static void apply(ContextP &context);
+    template <typename Input> static void apply(const Input &, ContextP &context) {
         apply(context);
     }
 };
 
 template <> struct action<grammar::ops::percent> {
-    static void apply(Context &context);
-    template <typename Input> static void apply(const Input &, Context &context) {
+    static void apply(ContextP &context);
+    template <typename Input> static void apply(const Input &, ContextP &context) {
         apply(context);
     }
 };
 
 template <> struct action<grammar::ops::plus> {
-    static void apply(Context &context);
-    template <typename Input> static void apply(const Input &, Context &context) {
+    static void apply(ContextP &context);
+    template <typename Input> static void apply(const Input &, ContextP &context) {
         apply(context);
     }
 };
 
 template <> struct action<grammar::ops::minus> {
-    static void apply(Context &context);
-    template <typename Input> static void apply(const Input &, Context &context) {
+    static void apply(ContextP &context);
+    template <typename Input> static void apply(const Input &, ContextP &context) {
         apply(context);
     }
 };
 
 template <> struct action<grammar::ops::cmp_lt> {
-    static void apply(Context &context);
-    template <typename Input> static void apply(const Input &, Context &context) {
+    static void apply(ContextP &context);
+    template <typename Input> static void apply(const Input &, ContextP &context) {
         apply(context);
     }
 };
 
 template <> struct action<grammar::ops::cmp_leq> {
-    static void apply(Context &context);
-    template <typename Input> static void apply(const Input &, Context &context) {
+    static void apply(ContextP &context);
+    template <typename Input> static void apply(const Input &, ContextP &context) {
         apply(context);
     }
 };
 
 template <> struct action<grammar::ops::cmp_gt> {
-    static void apply(Context &context);
-    template <typename Input> static void apply(const Input &, Context &context) {
+    static void apply(ContextP &context);
+    template <typename Input> static void apply(const Input &, ContextP &context) {
         apply(context);
     }
 };
 
 template <> struct action<grammar::ops::cmp_geq> {
-    static void apply(Context &context);
-    template <typename Input> static void apply(const Input &, Context &context) {
+    static void apply(ContextP &context);
+    template <typename Input> static void apply(const Input &, ContextP &context) {
         apply(context);
     }
 };
 
 template <> struct action<grammar::ops::cmp_eq> {
-    static void apply(Context &context);
-    template <typename Input> static void apply(const Input &, Context &context) {
+    static void apply(ContextP &context);
+    template <typename Input> static void apply(const Input &, ContextP &context) {
         apply(context);
     }
 };
 
 template <> struct action<grammar::ops::cmp_neq> {
-    static void apply(Context &context);
-    template <typename Input> static void apply(const Input &, Context &context) {
+    static void apply(ContextP &context);
+    template <typename Input> static void apply(const Input &, ContextP &context) {
         apply(context);
     }
 };
 
 template <> struct action<grammar::ops::op_and> {
-    static void apply(Context &context);
-    template <typename Input> static void apply(const Input &, Context &context) {
+    static void apply(ContextP &context);
+    template <typename Input> static void apply(const Input &, ContextP &context) {
         apply(context);
     }
 };
 
 template <> struct action<grammar::ops::op_or> {
-    static void apply(Context &context);
-    template <typename Input> static void apply(const Input &, Context &context) {
+    static void apply(ContextP &context);
+    template <typename Input> static void apply(const Input &, ContextP &context) {
         apply(context);
     }
 };

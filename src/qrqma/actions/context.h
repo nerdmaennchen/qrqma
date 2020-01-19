@@ -5,7 +5,9 @@
 #include <vector>
 #include <typeinfo>
 #include <optional>
+#include <memory>
 
+#include "types.h"
 #include "../loader.h"
 #include "../symbol.h"
 #include "../unique_function.h"
@@ -14,42 +16,23 @@ namespace qrqma {
 namespace actions {
 
 struct Context {
-    using Symbol = symbol::Symbol;
-    using StaticText = symbol::StaticText;
-    using RenderOutput = symbol::RenderOutput;
-    using Renderable = symbol::Renderable;
-    using Block = symbol::Block;
     struct StopToken {};
-    
-    using Token = std::variant<StaticText, Renderable, StopToken>;
+    using StaticText   = symbol::StaticText;
+    using Renderable   = symbol::Renderable;
+    using ContextBlock = symbol::ContextBlock;
+    using RenderToken = std::variant<StaticText, Renderable, StopToken>;
 
-    using SymbolTable = symbol::SymbolTable;
+    using RenderOutput = symbol::RenderOutput;
+
+    using Expression      = types::Expression;
+    using ExpressionPtr   = types::ExpressionPtr;
+    using ExpressionTable = types::ExpressionTable;
+
+    using Block       = symbol::Block;
     using BlockTable  = symbol::BlockTable;
 
-    // a function that eats an any and converts the inner type to something else
-    using ConverterFunc = std::function<std::any(std::any const&)>;
-
-    struct Expression {
-        using FuncType = qrqma::unique_func<Symbol()>;
-
-        Expression(std::type_info const& t, FuncType func)
-          : mType{t}, mEval{std::move(func)} {}
-
-        Expression(Expression&& other) noexcept : mType{std::move(other.mType)}, mEval{std::move(other.mEval)} {}
-
-        auto eval_f() const { return mEval(); }
-        std::type_info const& type() { return mType; }
-
-        template<typename T>
-        T eval() const { return std::any_cast<T>(eval_f()); }
-
-    private:
-        std::type_info const& mType;
-        FuncType mEval;
-    };
-
     Context() = default;
-    Context(SymbolTable symbols, BlockTable blocks);
+    Context(ExpressionTable expressions, BlockTable blocks);
     Context(Context* parent);
 
     void setTemplateLoader(TemplateLoader loader) {
@@ -59,13 +42,9 @@ struct Context {
         return *templateLoader;
     }
 
-    void addToken(Token t);
+    void addRenderToken(RenderToken t);
 
     void pushExpression(Expression f);
-    void pushExpression(std::type_info const& t, Expression::FuncType f) {
-        pushExpression(Expression{t, std::move(f)});
-    }
-
     Expression popExpression();
     std::vector<Expression> popAllExpressions();
 
@@ -73,31 +52,29 @@ struct Context {
         return expression_stack.size();
     }
 
-    Symbol& operator[](std::string const &name);
-    Symbol const* getSymbol(std::string const &name) const;
-    SymbolTable const& getSymbolTable() const;
-    void setSymbol(std::string const& name, Symbol symbol);
+    ExpressionPtr operator[](std::string const &name);
+    ExpressionTable const& getSymbolTable() const;
+    
+    void setSymbol(std::string const& name, Expression symbol);
+    void setSymbol(std::string const& name, ExpressionPtr symbol);
 
     Block const& getBlock(std::string const &name) const;
     void setBlock(std::string const& name, Block block);
     BlockTable popBlockTable();
 
-    RenderOutput operator()() const;
+    RenderOutput operator()(bool promoteSymbols=true);
 
-    static ConverterFunc convert(std::type_info const& from, std::type_info const& to);
-
-    Context& childContext();
-
-    Context* parentContext() {
+    Context* getParentContext() {
         return parent;
+    }
+    void setParentContext(Context* p) {
+        parent = p;
     }
 
 private:
+    std::vector<RenderToken> tokens;
 
-    std::vector<std::unique_ptr<Context>> childContexts;
-    std::vector<Token> tokens;
-
-    SymbolTable symbols;
+    ExpressionTable symbols;
     BlockTable blocks;
 
     std::vector<Expression> expression_stack;
@@ -106,6 +83,8 @@ private:
 
     Context* parent{nullptr};
 };
+
+using ContextP = std::unique_ptr<Context>;
 
 }
 }
