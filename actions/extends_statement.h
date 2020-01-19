@@ -16,10 +16,10 @@ struct action;
 
 template <> struct action<grammar::extends_control_statement> {
     template <typename Input> 
-    static void apply(const Input &, Context& context) {
+    static void apply(const Input &, ContextP& context) {
         apply(context);
     }
-    static void apply(Context& context);
+    static void apply(ContextP& context);
 };
 
 }

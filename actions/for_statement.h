@@ -4,6 +4,7 @@
 #include "../tao/pegtl.hpp"
 
 #include <vector>
+#include <map>
 #include <string_view>
 
 namespace qrqma {
@@ -11,6 +12,9 @@ namespace qrqma {
 namespace grammar {
 
 struct for_control_statement;
+struct for_identifier;
+struct for_container_identifier;
+struct for_content;
 
 }
 
@@ -20,136 +24,57 @@ namespace detail {
 using SymbolList = std::vector<std::string>;
 }
 
+template<typename Rule> 
+struct action;
 namespace pegtl = tao::pegtl;
 
-template <> struct action<grammar::for_control_statement> : pegtl::change_states<detail::SymbolList, Context, Context> {
+template <> struct action<grammar::for_control_statement> : pegtl::change_states<detail::SymbolList, ContextP, ContextP> {
     template< typename Rule, pegtl::apply_mode A, pegtl::rewind_mode M, template< typename... > class Action, template< typename... > class Control, typename Input>
-    [[nodiscard]] static bool match( Input& in, Context& context)
+    [[nodiscard]] static bool match(Input& in, ContextP& context)
     {
         char const* marker = in.current();
-        auto& inner_context = context.childContext();
-
-        inner_context.setSymbol("loop.length",    types::Integer{});
-        inner_context.setSymbol("loop.index0",    types::Integer{});
-        inner_context.setSymbol("loop.index",     types::Integer{});
-        inner_context.setSymbol("loop.revindex0", types::Integer{});
-        inner_context.setSymbol("loop.revindex",  types::Integer{});
-        inner_context.setSymbol("loop.first",     types::Bool{});
-        inner_context.setSymbol("loop.last",      types::Bool{});
-        inner_context.setSymbol("loop.previtem", {});
-        inner_context.setSymbol("loop.nextitem", {});
-
-        return pegtl::change_states<detail::SymbolList, Context, Context>::match< Rule, A, M, Action, Control >(std::make_index_sequence<3>{}, in, detail::SymbolList{}, context.childContext(), inner_context, context, marker);
+        auto container_ctx = std::make_unique<Context>(context.get());
+        auto inner_context = std::make_unique<Context>(context.get());
+        return pegtl::change_states<detail::SymbolList, ContextP, ContextP>::match< Rule, A, M, Action, Control >(std::make_index_sequence<3>{}, in, detail::SymbolList{}, container_ctx, inner_context, context, marker);
     }
 
+    static void success(const std::string &in, detail::SymbolList &symbol_names, ContextP &container_ctx, ContextP &inner_context, ContextP &outer_context);
+
     template <typename Input> 
-    static void success(const Input &in, detail::SymbolList &symbol_names, Context &container_ctx, Context &inner_context, Context &outer_context, char const* marker) {
-        auto iterable = container_ctx.popExpression();
-        if (iterable.type() == typeid(symbol::List)) {
-            if (symbol_names.size() != 1) {
-                throw std::runtime_error("cannot broadcast list items into multiple identifiers: \"" + std::string{marker, std::size_t(in.current()-marker)} + "\"");
-            }
-            outer_context.addToken([it = std::move(iterable), symName=std::move(symbol_names[0]), &inner_context]() -> Context::RenderOutput {
-                auto l = it.eval<symbol::List>();
-                std::string ret;
-                
-                inner_context.setSymbol("loop.length", static_cast<types::Integer>(l.size()));
-                types::Integer itCounter {};
-
-                for (auto const& i : l) {
-                    inner_context.setSymbol("loop.index0", itCounter);
-                    inner_context.setSymbol("loop.index",  itCounter+1);
-                    inner_context.setSymbol("loop.revindex0", static_cast<types::Integer>(l.size() - itCounter - 1));
-                    inner_context.setSymbol("loop.revindex",  static_cast<types::Integer>(l.size() - itCounter));
-                    inner_context.setSymbol("loop.first",  itCounter == 0);
-                    inner_context.setSymbol("loop.last",   itCounter == static_cast<types::Integer>(l.size()-1));
-
-                    inner_context.setSymbol("loop.previtem",  itCounter==0?std::any():l[itCounter-1]);
-                    inner_context.setSymbol("loop.nextitem",  itCounter==static_cast<types::Integer>(l.size()-1)?std::any():l[itCounter+1]);
-
-                    inner_context.setSymbol(symName, i);
-            
-                    auto ro = inner_context();
-                    ret += ro.rendered;
-                    if (ro.stop_rendering_flag) {
-                        return {ret, true};
-                    }
-
-                    itCounter++;
-                }
-
-                return {ret, false};
-            });
-        } else if (iterable.type() == typeid(symbol::Map)) {
-            if (symbol_names.size() > 2) {
-                throw std::runtime_error("cannot broadcast list items into more than two identifiers: \"" + std::string{marker, std::size_t(in.current()-marker)} + "\"");
-            }
-            outer_context.addToken([it = std::move(iterable), symbol_names=std::move(symbol_names), &inner_context]() -> Context::RenderOutput {
-                auto m = it.eval<symbol::Map>();
-                std::string ret;
-                
-                inner_context.setSymbol("loop.length", static_cast<types::Integer>(m.size()));
-                types::Integer itCounter {};
-
-                for (auto it=begin(m); it!=end(m); ++it) {
-                    inner_context.setSymbol("loop.index0", itCounter);
-                    inner_context.setSymbol("loop.index",  itCounter+1);
-                    inner_context.setSymbol("loop.revindex0", static_cast<types::Integer>(m.size() - itCounter - 1));
-                    inner_context.setSymbol("loop.revindex",  static_cast<types::Integer>(m.size() - itCounter));
-                    inner_context.setSymbol("loop.first",  itCounter == 0);
-                    inner_context.setSymbol("loop.last",   itCounter == static_cast<types::Integer>(m.size()-1));
-
-                    inner_context.setSymbol("loop.previtem",  itCounter==0?std::any():std::prev(it)->first);
-                    inner_context.setSymbol("loop.nextitem",  itCounter==static_cast<types::Integer>(m.size()-1)?std::any():std::next(it)->first);
-
-                    inner_context.setSymbol(symbol_names[0], it->first);
-                    if (symbol_names.size() == 2) {
-                        inner_context.setSymbol(symbol_names[1], it->second);
-                    }
-            
-                    auto ro = inner_context();
-                    ret += ro.rendered;
-                    if (ro.stop_rendering_flag) {
-                        return {ret, true};
-                    }
-                    itCounter++;
-                }
-
-                return {ret, false};
-            });
-        }
+    static void success(const Input &in, detail::SymbolList &symbol_names, ContextP &container_ctx, ContextP &inner_ctx, ContextP &outer_ctx, char const* marker) {
+        success(std::string{marker, std::size_t(in.current()-marker)}, symbol_names, container_ctx, inner_ctx, outer_ctx);
     }
 };
 
 template <> struct action<grammar::for_identifier> {
+    static void apply(const std::string &in, detail::SymbolList &symbol_names, ContextP& inner_context);
     template <typename Input> 
-    static void apply(const Input &in, detail::SymbolList &symbol_names, Context&, Context& inner_context) {
-        auto name = in.string();
-        inner_context.setSymbol(name, {});
-        symbol_names.emplace_back(in.string());
+    static void apply(const Input &in, detail::SymbolList &symbol_names, ContextP&, ContextP& inner_context) {
+        apply(in.string(), symbol_names, inner_context);
     }
 };
-template <> struct action<grammar::for_container_identifier> : pegtl::change_states<Context> {
+template <> struct action<grammar::for_container_identifier> : pegtl::change_states<ContextP> {
     template< typename Rule, pegtl::apply_mode A, pegtl::rewind_mode M, template< typename... > class Action, template< typename... > class Control, typename Input>
-    [[nodiscard]] static bool match( Input& in, detail::SymbolList&, Context& container_context, Context&) 
+    [[nodiscard]] static bool match( Input& in, detail::SymbolList&, ContextP& container_context, ContextP& outer_context) 
     {
-        return pegtl::change_states<Context>::match< Rule, A, M, Action, Control >(std::make_index_sequence<1>{}, in, container_context);
+        return pegtl::change_states<ContextP>::match< Rule, A, M, Action, Control >(std::make_index_sequence<1>{}, in, container_context, outer_context);
     }
 
+
     template <typename Input> 
-    static void success(const Input &, Context&) { }
+    static void success(const Input &, ContextP&, ContextP&) {}
 };
 
 
-template <> struct action<grammar::for_content> : pegtl::change_states<Context> {
+template <> struct action<grammar::for_content> : pegtl::change_states<ContextP> {
     template< typename Rule, pegtl::apply_mode A, pegtl::rewind_mode M, template< typename... > class Action, template< typename... > class Control, typename Input>
-    [[nodiscard]] static bool match( Input& in, detail::SymbolList&, Context&, Context& inner_context)
+    [[nodiscard]] static bool match( Input& in, detail::SymbolList&, ContextP&, ContextP& inner_context)
     {
-        return pegtl::change_states<Context>::match< Rule, A, M, Action, Control >(std::make_index_sequence<1>{}, in, inner_context );
+        return pegtl::change_states<ContextP>::match< Rule, A, M, Action, Control >(std::make_index_sequence<1>{}, in, inner_context );
     }
 
     template <typename Input> 
-    static void success(const Input &, Context&) { }
+    static void success(const Input &, ContextP&) { }
 };
 
 }

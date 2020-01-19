@@ -1,26 +1,50 @@
 #include "extends_statement.h"
 
 #include "types.h"
-#include "../template.h"
+#include "../grammar/grammar.h"
+#include "actions.h"
+#include "../demangle.h"
+#include "../overloaded.h"
 
 namespace qrqma {
 namespace actions {
 
-void action<grammar::extends_control_statement>::apply(Context& context) {
-    auto name = context.popExpression().eval<types::String>();
-    
-    Context* rootC = &context;
-    while (rootC->parentContext()) { rootC = rootC->parentContext(); }
-    context.addToken([templ = std::optional<Template>{}, name=std::move(name), rootC]() mutable -> Context::RenderOutput {
-        if (not templ) {
-            Context::SymbolTable symbols = rootC->getSymbolTable();
-            Context::BlockTable blocks = rootC->popBlockTable();
-            auto loader = rootC->getTemplateLoader();
+namespace pegtl = tao::pegtl;
 
-            templ.emplace(loader(name), symbols, loader, std::move(blocks));
+void action<grammar::extends_control_statement>::apply(ContextP& context) {
+    auto name = std::visit(detail::overloaded{
+        [] (types::ConstantExpression const& ce) -> std::string {
+            return std::any_cast<std::string>(ce.eval());
+        },
+        [] (auto const& other) -> std::string {
+            throw std::runtime_error("cannot use a " + internal::demangle(typeid(other)) + " as extends specifier!");
+        }
+    }, context->popExpression());
+    
+    context->addRenderToken([base_ctx = std::optional<Context>{}, name=std::move(name), ctx=context.get()]() mutable -> Context::RenderOutput {
+        if (not base_ctx) {
+            auto loader      = ctx->getTemplateLoader();
+            
+            auto loaderCtx = ctx;
+            while (loaderCtx and not loader) {
+                loader = loaderCtx->getTemplateLoader();
+                loaderCtx = loaderCtx->getParentContext();
+            }
+
+            if (not loader) {
+                throw std::runtime_error{"cannot extend a template without specifying a template loader!"};
+            }
+
+            base_ctx.emplace(ctx);
+            auto content = loader(name);
+            pegtl::parse<pegtl::if_must<grammar::grammar, pegtl::eof>, actions::action>(
+                pegtl::memory_input{content, ""}, 
+                *base_ctx
+            );
+            
         }
 
-        return {(*templ)(), true};
+        return {(*base_ctx)().rendered, true};
     });
 }
 

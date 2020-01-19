@@ -9,22 +9,12 @@
 #include <variant>
 
 namespace qrqma {
+namespace actions {
+struct Context;   
+}
 namespace symbol {
 
-struct StaticText : std::string {};
-
-// the RenderOutput mechanism is used to render only parts of a template (e.g., for use as child template)
-struct RenderOutput { 
-    std::string rendered;
-    bool stop_rendering_flag {false};
-};
-using Renderable = unique_func<RenderOutput()>;
-using Block = std::variant<StaticText, Renderable>;
-using BlockTable = std::map<std::string, Block>;
-
-struct Undefined {};
 using Symbol = std::any;
-inline Symbol the_undefined_symbol = Symbol{Undefined{}};
 using SymbolTable = std::map<std::string, Symbol>;
 
 struct Function {
@@ -69,6 +59,23 @@ private:
 
 using List = std::vector<Symbol>;
 using Map = std::map<std::string, Symbol>;
+
+
+
+// the RenderOutput mechanism is used to render only parts of a template (e.g., for use as child template)
+struct RenderOutput { 
+    std::string rendered;
+    bool stop_rendering_flag {false};
+};
+using StaticText = std::string;
+using Renderable = unique_func<RenderOutput()>;
+
+struct ContextBlock {
+    actions::Context* context; // the inner context of the block
+    Renderable renderable; // the renderable of this block
+};
+using Block = std::variant<StaticText, Renderable, ContextBlock>;
+using BlockTable = std::map<std::string, Block>;
 
 } // namespace symbol
 } // namespace qrqma

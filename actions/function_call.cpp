@@ -1,5 +1,6 @@
 #include "function_call.h"
-#include "../symbol.h"
+#include "types.h"
+#include "convert.h"
 #include "../demangle.h"
 
 #include <stdexcept>
@@ -7,45 +8,88 @@
 namespace qrqma {
 namespace actions {
 
-void action<grammar::ops::call>::apply(const std::string &in, Context &context) {
-    // pop everything from the stack that is not a function
-    std::vector<Context::Expression> args_r;
-    while (true) {
-        auto exp = context.popExpression();
-        auto const& t = exp.type();
-        if (t == typeid(symbol::Function)) {
-            auto ftor = exp.eval<symbol::Function>();
-            auto const& inArgTypes = ftor.argTypes;
-            if (args_r.size() != inArgTypes.size()) {
-                throw std::invalid_argument("cannot perform the call: \"" + in + "\": invalid numer of arguments\nexpected " + std::to_string(inArgTypes.size()) + " got " + std::to_string(args_r.size()));
-            }
-            std::vector<Context::Expression> args;
-            std::size_t i{0};
-            for (auto it = std::rbegin(args_r); it != std::rend(args_r); ++it) {
-                auto const& type = it->type();
-                try {
-                    args.emplace_back(*inArgTypes[i], [c=context.convert(type, *inArgTypes[i]), e=std::move(*it)]{
-                        return c(e.eval_f());
-                    });
-                } catch (std::exception const& err) {
-                    std::throw_with_nested(
-                        std::runtime_error("convert arg no " + std::to_string(i) 
-                        + " from type \"" + internal::demangle(type) 
-                        + "\" to type: \"" + internal::demangle(*inArgTypes[i])
-                    ));
-                }
-            }
-            context.pushExpression(ftor.targetType, [exp=std::move(exp), args=std::move(args)]{
-                auto ftor = exp.eval<symbol::Function>();
-                std::vector<std::any> argV;
-                for (auto const& arg : args) {
-                    argV.emplace_back(arg.eval_f());
-                }
-                return ftor(argV);
-            });
-            return;
+using  CE = types::ConstantExpression;
+using NCE = types::NonconstantExpression;
+
+void action<grammar::ops::call>::success(std::string const& in, ContextP &context, ContextP &argsC) {
+    auto ftor_e = context->popExpression();
+    auto args_r = argsC->popAllExpressions();
+    
+    bool allconst = std::holds_alternative<CE>(ftor_e) and
+        std::all_of(begin(args_r), end(args_r), [](auto const& e) { return std::holds_alternative<CE>(e); });
+
+    if (allconst) {
+        auto ftor = std::any_cast<symbol::Function>(std::get<CE>(ftor_e).eval());
+        auto const& inArgTypes = ftor.argTypes;
+        if (args_r.size() != inArgTypes.size()) {
+            throw std::invalid_argument("cannot perform the call: \"" + in + "\": invalid numer of arguments\nexpected " + std::to_string(inArgTypes.size()) + " got " + std::to_string(args_r.size()));
         }
-        args_r.emplace_back(std::move(exp));
+        std::vector<std::any> args;
+        for (std::size_t i{0}; i < args_r.size(); ++i) {
+            auto val = std::get<CE>(args_r[i]).eval();
+            try {
+                args.emplace_back(convert(val, *inArgTypes[i]));
+            } catch (std::exception const& e) {
+                std::throw_with_nested(
+                    std::runtime_error("in function call: \"" + in + "\": cannot convert arg no " + std::to_string(i) 
+                    + " from type \"" + internal::demangle(val.type()) 
+                    + "\" to type: \"" + internal::demangle(*inArgTypes[i]) + "\""
+                ));
+            }
+        }
+        context->pushExpression(NCE{
+            [ftor=std::move(ftor), args=std::move(args)] {
+                return ftor(args);
+            }
+        });
+    } else {
+        context->pushExpression(NCE{
+            [ftor_e=std::move(ftor_e), args_r=std::move(args_r), in=std::move(in)] {
+                auto ftor = std::visit([](auto const& e) { return std::any_cast<symbol::Function>(e.eval()); }, ftor_e);
+                auto const& inArgTypes = ftor.argTypes;
+                if (args_r.size() != inArgTypes.size()) {
+                    throw std::invalid_argument("cannot perform the call: \"" + in + "\": invalid numer of arguments\nexpected " + std::to_string(inArgTypes.size()) + " got " + std::to_string(args_r.size()));
+                }
+                std::vector<std::any> args;
+                for (std::size_t i{0}; i < args_r.size(); ++i) {
+                    auto val = std::visit([](auto const& e) { return e.eval(); }, args_r[i]);
+                    try {
+                        args.emplace_back(convert(val, *inArgTypes[i]));
+                    } catch (std::exception const& e) {
+                        std::throw_with_nested(
+                            std::runtime_error("in function call: \"" + in + "\": cannot convert arg no " + std::to_string(i) 
+                            + " from type \"" + internal::demangle(val.type()) 
+                            + "\" to type: \"" + internal::demangle(*inArgTypes[i]) + "\""
+                        ));
+                    }
+                }
+                return ftor(args);
+            }
+        });
+    }
+}
+
+
+void action<grammar::ops::call_identifier>::apply(const std::string &in, ContextP& outer_context, ContextP&) {
+    auto symbol = (*outer_context)[in];
+    if (symbol) {
+        auto val = std::visit([](auto& e) { return e.eval(); }, *symbol);
+        if (val.type() != typeid(symbol::Function)) {
+            throw std::runtime_error("cannot invoke \"" + in + "\" of type: " + internal::demangle(val.type()));
+        }
+        outer_context->pushExpression(types::ConstantExpression{[val=std::move(val)] { return val; }});
+    } else {
+        outer_context->pushExpression(types::NonconstantExpression{[outer_context=outer_context.get(), in] {
+            auto symbol = (*outer_context)[in];
+            if (not symbol) {
+                throw std::runtime_error("cannot invoke \"" + in + "\" [unknown function]");
+            }
+            auto val = std::visit([](auto& e) { return e.eval(); }, *symbol);
+            if (val.type() != typeid(symbol::Function)) {
+                throw std::runtime_error("cannot invoke \"" + in + "\" of type: " + internal::demangle(val.type()));
+            }
+            return val;
+        }});
     }
 }
 

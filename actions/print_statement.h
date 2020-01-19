@@ -14,9 +14,9 @@ struct action;
 
 template <>
 struct action<grammar::print_expression> {
-    static void apply(Context &context);
+    static void apply(ContextP &context);
     template <typename Input>
-    static void apply(const Input &, Context &context) {
+    static void apply(const Input &, ContextP &context) {
         apply(context);
     }
 };
