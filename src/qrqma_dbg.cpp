@@ -6,6 +6,8 @@
 
 #include "qrqma/actions/actions.h"
 
+#include <regex>
+
 namespace pegtl = tao::pegtl;
 
 namespace qrqma_test
@@ -19,6 +21,9 @@ auto dbg_command   = sargp::Command("dbg", "debug an expression", qrqma_dbg);
 auto dbg_start     = dbg_command.Parameter<bool>(false, "start", "print start rules");
 auto dbg_success   = dbg_command.Parameter<bool>(true, "success", "print success rules");
 auto dbg_failure   = dbg_command.Parameter<bool>(false, "failure", "print failure rules");
+auto dbg_filter    = dbg_command.Parameter<std::string>(".*", "filter", "a filter to reduce the clutter of the dbg output");
+
+std::regex dbg_regex;
 
 void qrqma_check() {
     if( pegtl::analyze< qrqma::grammar::grammar >() == 0 ) {
@@ -41,9 +46,12 @@ struct normal : pegtl::normal<Rule>
     static void start( const Input& in, Marker_Stack& state) {
         state.marker_stack.emplace_back(in.current());
         if (*dbg_start) {
-            std::string_view sv{in.current(), in.size()};
-            std::vector<char> indent = std::vector<char>(static_cast<std::size_t>(state.marker_stack.size()), ' '); indent.back() = '\0';
-            std::cout << indent.data() << "start: " << qrqma::internal::demangle(typeid(Rule)) << "\n" << indent.data() << sv << "\n";
+            auto rule = qrqma::internal::demangle(typeid(Rule));
+            if (std::regex_match(rule, dbg_regex)) {
+                std::string_view sv{in.current(), in.size()};
+                std::vector<char> indent = std::vector<char>(static_cast<std::size_t>(state.marker_stack.size()), ' '); indent.back() = '\0';
+                std::cout << indent.data() << "start: " << qrqma::internal::demangle(typeid(Rule)) << "\n" << indent.data() << sv << "\n";
+            }
         }
         SuperClass::start(in);
     }
@@ -53,9 +61,12 @@ struct normal : pegtl::normal<Rule>
         auto marker = state.marker_stack.back();
         state.marker_stack.pop_back();
         if (*dbg_success) {
-            std::string_view sv{marker, static_cast<std::size_t>(in.current()-marker)};
-            std::vector<char> indent = std::vector<char>(static_cast<std::size_t>(state.marker_stack.size()+1), ' '); indent.back() = '\0';
-            std::cout << indent.data() << "success: " << qrqma::internal::demangle(typeid(Rule)) << "\n" << indent.data() << sv << "\n";
+            auto rule = qrqma::internal::demangle(typeid(Rule));
+            if (std::regex_match(rule, dbg_regex)) {
+                std::string_view sv{marker, static_cast<std::size_t>(in.current()-marker)};
+                std::vector<char> indent = std::vector<char>(static_cast<std::size_t>(state.marker_stack.size()+1), ' '); indent.back() = '\0';
+                std::cout << indent.data() << "success: " << qrqma::internal::demangle(typeid(Rule)) << "\n" << indent.data() << sv << "\n";
+            }
         }
         SuperClass::success(in);
     }
@@ -65,9 +76,12 @@ struct normal : pegtl::normal<Rule>
         auto marker = state.marker_stack.back();
         state.marker_stack.pop_back();
         if (*dbg_failure) {
-            std::string_view sv{marker, static_cast<std::size_t>(in.current()-marker)};
-            std::vector<char> indent = std::vector<char>(static_cast<std::size_t>(state.marker_stack.size()+1), ' '); indent.back() = '\0';
-            std::cout << indent.data() << "failure: " << qrqma::internal::demangle(typeid(Rule)) << "\n" << indent.data() << sv << "\n";
+            auto rule = qrqma::internal::demangle(typeid(Rule));
+            if (std::regex_match(rule, dbg_regex)) {
+                std::string_view sv{marker, static_cast<std::size_t>(in.current()-marker)};
+                std::vector<char> indent = std::vector<char>(static_cast<std::size_t>(state.marker_stack.size()+1), ' '); indent.back() = '\0';
+                std::cout << indent.data() << "failure: " << qrqma::internal::demangle(typeid(Rule)) << "\n" << indent.data() << sv << "\n";
+            }
         }
         SuperClass::failure(in);
     }
@@ -75,6 +89,7 @@ struct normal : pegtl::normal<Rule>
 
 void qrqma_dbg() {
     namespace pegtl = tao::pegtl;
+    dbg_regex = *dbg_filter;
     if (template_text) {
         pegtl::parse<pegtl::if_must<qrqma::grammar::grammar, pegtl::eof>, pegtl::nothing, normal>(
             pegtl::memory_input{*template_text, ""}, Marker_Stack{}
