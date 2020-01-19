@@ -65,7 +65,6 @@ Look for (demo.cpp)[https://github.com/nerdmaennchen/qrqma/blob/demo/src/demo.cp
 - tests (only the "is [test]" part); if statements are implemented
 - Line statements
 - Super blocks
-- Escaping
 - Macros (and Call)
 - Loop-else blocks
 - namespace objects
@@ -135,7 +134,21 @@ It is sometimes desirable – even necessary – to have qrqma ignore parts it w
 
 The easiest way to output a literal variable delimiter ({{) is by using a variable expression:
 
+~~~html
 {{ '{{' }}
+~~~
+
+For bigger sections, it makes sense to mark a block raw. For example, to include example Jinja syntax in a template, you can use this snippet:
+
+~~~html
+{% raw %}
+    <ul>
+    {% for item in seq %}
+        <li>{{ item }}</li>
+    {% endfor %}
+    </ul>
+{% endraw %}
+~~~
 
 ## Template Inheritance
 
