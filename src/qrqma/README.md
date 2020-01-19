@@ -1,7 +1,7 @@
 # QRQMA
 qrqma is a C++ implementaion of [Jinja](https://jinja.palletsprojects.com/) templates that tries to go as far as possible to reach Jinja's flexibility while retaining as much C++ mentality as possible.
-qrqma should not be considdered complete or ready for productive use, yet!
-It's still missing plenty of features.
+Please bear in mind that qrqma is not a 1to1 drop in replacement for Jinja since some of Jinja's features simply cannot be realized in C++. 
+Also qrqma is still missing some features.
 
 Most of this documentation is taken from the [Jinja documentation](https://jinja.palletsprojects.com/).
 If you love Jinja but miss using it from C++, you might love qrqma as well.
@@ -56,6 +56,20 @@ int main() {
 }
 ~~~
 
+More examples can be visited in the demo branch!
+Look for (demo.cpp)[https://github.com/nerdmaennchen/qrqma/blob/demo/src/demo.cpp] and (qrqma_test.cpp)[https://github.com/nerdmaennchen/qrqma/blob/demo/src/qrqma_test.cpp].
+
+# Missing in qrqma
+
+- Filters
+- tests (only the "is [test]" part); if statements are implemented
+- Line statements
+- Super blocks
+- Escaping
+- Macros (and Call)
+- Loop-else blocks
+- namespace objects
+
 # Getting Started
 
 To use qrqma in you C++ project the easiest way is to simply copy the qrqma sources into your project source directory and you're set.
@@ -70,7 +84,16 @@ Jinja allows for four types of statements, whereas qrqma only allows for three (
 
 ## Variables
 
-Template variables are passed to the template renderer or defined inside the template. Attributes and member functions of variables cannot be (directly) accessed from within a qrqma template. However, a function to provide an accessor can easily be passed to the renderer.
+Template variables are passed to the template renderer or defined inside the template.
+There are two stages when you can pass variables to the renderer:
+- during the Template's construction time  
+  Variables passed this way will be considered constant; if the template compiler can deduce that a variable/expression substitution will yield a constant it will reduce the expression and possibly generate static-only output.
+  This is what makes qrqma so fast!
+- during the Template's rendering time
+  Variables passed here will be rendered the very same way as in Jinja.
+  Except for variables that were already specified during compilation. Pre-rendered expressions/variables cannot be overridden during rendering time.
+
+Attributes and member functions of variables cannot be (directly) accessed from within a qrqma template. However, a function to provide an accessor can easily be passed to the renderer.
 Elements of variables of type ``symbols::Map`` (which implies a map from ``std::string``s as keys to ``std::any``s) can be accessed like so:
 
 ~~~
@@ -281,7 +304,9 @@ As qrqma does not support member access, variables are allowed to have a '.' in 
 In the example the variable ``outer_loop.index`` is a single variable with a slightly confusing name.
 This was chosen to give a as close-to-Jinja experience as possible.
 
-Please note that assignments in loops will be cleared at the end of the iteration and cannot outlive the loop scope.
+In contrast fo Jinja, variables declared within loops _will_ also be visible outside of the loop's scope.
+This reflects python's behavior of scopes.
+Note that the special variables from within a loop will _not_ be visible outside the scope.
 
 ## If
 
@@ -311,7 +336,7 @@ You can use more complex Expressions there, too:
 
 ## Assignments
 
-Inside control blocks, you can also assign values to variables. Assignments at top level (outside of blocks, ifs or loops) are exported from the template and can be used within parent templates.
+Inside control blocks, you can also assign values to variables. Assignments at top  level that are specified _before_ the ``{% extends ... %}`` keyword are exported from the template and can be used within parent templates.
 
 Assignments use the set tag:
 ~~~
@@ -322,20 +347,11 @@ Assignments use the set tag:
 
 ### Scoping Behavior
 
-Please keep in mind that it is not possible to set variables inside a block and have them show up outside of it.
-This also applies to loops.
-As a result the following template is not going to do what you might expect:
+Please keep in mind that the scoping behavior of qrqma is the same as in python.
+When a scope is exited the local variables will be promoted to the parent scope.
+qrqma will even recognize if a constant was promoted and will treat the variable after the scope as a constant trying to pre-render as much of the template as possible.
 
-~~~
-{% set iterated = false %}
-{% for item in seq %}
-    {{ item }}
-    {% set iterated = true %}
-{% endfor %}
-{% if not iterated %} did not iterate {% endif %}
-~~~
-
-For the moment it is not possible with qrqma syntax to do this.
+This behavior is different to Jinja's scoping behavior!
 
 ## Extends
 
@@ -381,6 +397,7 @@ The following literals exist:
   Keys must be unique strings and always have exactly one value.
 - ``true`` / ``True`` / ``false`` / ``False``:  
   true is always True and false is always False.
+  And vice versa.
 
 ## Math
 
