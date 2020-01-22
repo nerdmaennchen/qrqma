@@ -100,9 +100,66 @@ Elements of variables of type ``symbols::Map`` (which implies a map from ``std::
 {{ foo['bar'] }}
 ~~~
 
-If a variable or attribute does not exist, the template renderer will throw an exception during template compile time.
-Also if the template does something with a variable where no type conversion is known (e.g. pass a variable of type ``bool`` to a function that expects a ``std::string``) an exception will be thrown.
+If a variable does not exist during compile time, expressions involving this variable will be evaluated during render-time.
+If the variable is not defined during compile time, and exception will be thrown when the variable is used inside a calculation.
+An undefined variable will render to the empty string when used in a ``{{}}`` print-expression.
 
+## Functions
+
+You can pass a ``symbols::Function`` to the template and enable calls within the template to the passed function.
+Like so:
+~~~C++
+auto templateStr = R"(
+{% set my_list = make_list(5) -%}
+<ul>
+{%- for i in my_list %}
+<li>{{ title(i) }}</li>
+{%- endfor %}
+</ul>
+)";
+struct ListElement {
+    std::string title;
+};
+qrqma::Template rendering{
+    content,
+    {
+        // to play with qrqma add symbols here
+        {"make_list", qrqma::symbol::Function{[](int numElements) {
+            qrqma::symbol::List l;
+            for (int i{}; i < numElements; ++i) {
+                l.emplace_back(ListElement{"title: " + std::to_string(i)});
+            }
+            return l;
+        }}},
+        {"title", qrqma::symbol::Function{[](ListElement const& le) {
+            return le.title;
+        }}},
+    }
+};
+std::cout << rendering() << std::endl;
+~~~
+
+This will generate the following output:
+
+~~~html
+<ul>
+<li>title: 0</li>
+<li>title: 1</li>
+<li>title: 2</li>
+<li>title: 3</li>
+<li>title: 4</li>
+</ul>
+~~~
+
+Note that there is no member access operator within qrqma.
+Therefore, you need to pass a function that wraps this access.
+
+In general, function calls are performed in a type-safe manner!
+If the function you've supplied to the template has a single argument of type ``int``, it will only be invoked with an ``int``.
+Qrqma tries to convert supplied types as good as possible but cannot do more automatic casts that C++ could. 
+
+If the template does something with a variable where no type conversion is known (e.g. pass a variable of type ``bool`` to a function that expects a custom type) an exception will be thrown.
+Also an exception will be thrown if an undefined function is called during render-time.
 
 ## Filters
 
