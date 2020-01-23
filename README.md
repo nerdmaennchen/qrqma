@@ -101,7 +101,7 @@ Elements of variables of type ``symbols::Map`` (which implies a map from ``std::
 ~~~
 
 If a variable does not exist during compile time, expressions involving this variable will be evaluated during render-time.
-If the variable is not defined during compile time, and exception will be thrown when the variable is used inside a calculation.
+If the variable is not defined during render time an exception will be thrown when the variable is used inside a calculation.
 An undefined variable will render to the empty string when used in a ``{{}}`` print-expression.
 
 ## Functions
