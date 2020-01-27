@@ -165,7 +165,6 @@ Also an exception will be thrown if an undefined function is called during rende
 
 qrqma does not implement filters as Jinja does.
 However, filters can easily be created as simple function calls.
-The absence of filters is due to the fact that qrqma supports the bitwise-or operator ``|``.
 
 ## Tests
 
