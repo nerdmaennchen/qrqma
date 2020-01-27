@@ -1,6 +1,5 @@
 #pragma once
 
-#include <regex>
 #include <map>
 #include <set>
 #include <vector>
@@ -223,7 +222,6 @@ public:
 			throw parsing::detail::ParseError("cannot interpret " + args[0] + " as a valid value for " + SuperClass::getArgName());
 		}
 		SuperClass::_val = it->second;
-		SuperClass::parse(args);
 	}
 
 	std::string stringifyValue() const override {
@@ -297,8 +295,8 @@ struct Command final {
 private:
 	std::string               _name;
 	std::string               _description;
-    std::unique_ptr<TaskBase> _defaultTask;
 	std::vector<TaskBase*>    _tasks;
+    std::unique_ptr<TaskBase> _defaultTask;
 	bool                      _isActive {false};
 
 	std::vector<ParameterBase*> parameters;
@@ -419,8 +417,8 @@ template<typename CB>
 Command::Command(Command* parentCommand, std::string const& name, std::string const& description, CB&& cb) 
     : _name(name)
     , _description(description)
+    , _tasks{}
     , _defaultTask{std::make_unique<Task<CB>>(std::forward<CB>(cb), *this)}
-    , _tasks{{_defaultTask.get()}}
     , _parentCommand{parentCommand?:&Command::getDefaultCommand()}
 {
     _parentCommand->subcommands.emplace_back(this);

@@ -70,15 +70,13 @@ T parseFromString(std::string str) {
 			return false;
 		}
 		throw ParseError{"invalid boolean specifier"};
-	}
 
-	if constexpr (std::is_same_v<T, std::string>) {
+	} else if constexpr (std::is_same_v<T, std::string>) {
 		return str;
-	}
 
-	T ret;
-	// parse all integer-like types
-	if constexpr (std::numeric_limits<T>::is_exact) {
+	} else if constexpr (std::numeric_limits<T>::is_exact) {
+		// parse all integer-like types
+		T ret;
 		std::transform(str.begin(), str.end(), str.begin(), ::tolower);
 		int base=0;
 		char const* strBegin = str.data();
@@ -97,7 +95,7 @@ T parseFromString(std::string str) {
 		} catch (std::invalid_argument const&) {
 			throw ParseError{"not an integer"};
 		}
-		// if we didnt parse everything check if it has some known suffix
+		// if we didn't parse everything check if it has some known suffix
 		if (static_cast<int>(nextIdx) != strEnd - strBegin) {
 			if constexpr (not std::is_same_v<bool, T>) {
 				auto suffix = std::string_view{strBegin + nextIdx};
@@ -113,37 +111,49 @@ T parseFromString(std::string str) {
 			}
 		}
 		return ret;
-	}
 
-	// parse everything else
-	std::stringstream ss{str};
-	if (not (ss >> ret)) {
-		throw ParseError{};
-	}
+	} else if constexpr (std::is_enum_v<T>) {
+		using UT = std::underlying_type_t<T>;
+		UT ret;
+		// parse everything else
+		std::stringstream ss{str};
+		if (not (ss >> ret)) {
+			throw ParseError{};
+		}
+		return T(ret);
 
-	// parse floats/doubles and convert if they are angles
-	if constexpr (std::is_floating_point_v<T>) {
-		if (not ss.eof()) {
-			std::string ending;
-			if (not (ss >> ending)) {
-				throw ParseError{};
-			}
-			if (ending == "rad") {
-			} else if (ending == "deg") {
-				ret = ret / 180. * M_PI;
-			} else if (ending == "tau") {
-				ret = ret * 2. * M_PI;
-			} else {
-				throw ParseError{"unknown suffix"};
+	} else {
+		// parse everything else
+		T ret;
+		std::stringstream ss{str};
+		if (not (ss >> ret)) {
+			throw ParseError{};
+		}
+		// parse floats/doubles and convert if they are angles
+		if constexpr (std::is_floating_point_v<T>) {
+			if (not ss.eof()) {
+				std::string ending;
+				if (not (ss >> ending)) {
+					throw ParseError{};
+				}
+				if (ending == "rad") {
+				} else if (ending == "deg") {
+					ret = ret / 180. * M_PI;
+				} else if (ending == "pi") {
+					ret = ret * M_PI;
+				} else if (ending == "tau") {
+					ret = ret * 2. * M_PI;
+				} else {
+					throw ParseError{"unknown suffix"};
+				}
 			}
 		}
-	}
 
-	if (not ss.eof()) {
-		throw ParseError{};
+		if (not ss.eof()) {
+			throw ParseError{};
+		}
+		return ret;
 	}
-
-	return ret;
 }
 
 template<typename T>
