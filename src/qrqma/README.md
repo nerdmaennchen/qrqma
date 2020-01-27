@@ -183,8 +183,52 @@ To comment out a part of the template simply wrap the comment in a ``{# comment 
 
 ## Whitespace Control
 
-qrqma does not treat any whitespaces differently.
+By default qrqma does not treat any whitespaces differently.
 Everything that is part of the output, will be output.
+However, you can use a single dash (``-``) at the beginning or end of a control statement to suppress all whitespaces leading or trailing to the statement.
+It's best demonstrated by an example:
+
+~~~html
+<p>text</p>
+{% if True %}
+foobar
+{% endif %}
+<p>mote text</p>
+~~~
+will be rendered to:
+~~~html
+<p>text</p>
+
+foobar
+
+<p>mote text</p>
+~~~
+
+With whitespace control you can suppress the output of the empty lines like so:
+~~~html
+<p>text</p>
+{% if True -%}
+foobar
+{%- endif -%}
+<p>mote text</p>
+~~~
+will be rendered to:
+~~~html
+<p>text</p>
+foobar<p>mote text</p>
+~~~
+
+###Note:
+You must not add whitespace between the tag and the minus sign.
+
+valid:
+~~~
+{%- if foo -%}...{% endif %}
+~~~
+invalid:
+~~~
+{% - if foo - %}...{% endif %}
+~~~
 
 ## Escaping
 
