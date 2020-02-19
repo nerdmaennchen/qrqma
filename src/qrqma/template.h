@@ -10,7 +10,7 @@
 namespace qrqma {
 
 struct Template {
-    Template(std::string_view input, symbol::SymbolTable symbols, TemplateLoader loader=defaultLoader(), symbol::BlockTable blocks={});
+    Template(std::string_view input, symbol::SymbolTable symbols={}, TemplateLoader loader=defaultLoader(), symbol::BlockTable blocks={});
     Template(Template&&);
     Template& operator=(Template&&);
     
