@@ -66,8 +66,11 @@ NonconstantExpression asNonconstantE(Expression&& e);
 using ExpressionPtr = std::shared_ptr<Expression>;
 using ExpressionTable = std::map<std::string, ExpressionPtr>;
 
-using List = std::vector<Value>;
-using Map = std::map<std::string, Value>;
+using List = symbol::List;
+using Map = symbol::Map;
+using MultiMap = symbol::MultiMap;
+using UnorderedMap = symbol::UnorderedMap;
+using UnorderedMultiMap = symbol::UnorderedMultiMap;
 
 }
 }

@@ -71,8 +71,8 @@ Context::RenderOutput handleList(types::List& l, std::string &symName, Context* 
     return {ret, false};
 }
 
-
-Context::RenderOutput handleMap(types::Map& m, detail::SymbolList &symbol_names, Context* inner_context) {
+template<typename MapT>
+Context::RenderOutput handleMap(MapT& m, detail::SymbolList &symbol_names, Context* inner_context) {
     std::string ret;
     
     auto parent = inner_context->getParentContext();
@@ -99,6 +99,7 @@ Context::RenderOutput handleMap(types::Map& m, detail::SymbolList &symbol_names,
     });
 
     types::Integer itCounter {};
+    auto prev = std::begin(m);
     for (auto it=std::begin(m); it!=std::end(m); ++it) {
         symbol_ctx.setSymbol("loop.index0", types::NonconstantExpression{[c=itCounter]{  return c; }});
         symbol_ctx.setSymbol("loop.index",  types::NonconstantExpression{[c=itCounter+1]{  return c; }});
@@ -108,17 +109,17 @@ Context::RenderOutput handleMap(types::Map& m, detail::SymbolList &symbol_names,
         symbol_ctx.setSymbol("loop.first",  types::NonconstantExpression{[v=itCounter == 0]{  return v; }});
         symbol_ctx.setSymbol("loop.last",  types::NonconstantExpression{[v=itCounter == static_cast<types::Integer>(m.size()-1)]{  return v; }});
 
-        if (it != std::begin(m)) {
-            symbol_ctx.setSymbol("loop.previtem", types::NonconstantExpression{});    
-        } else {
-            auto prev = std::prev(it);
-            symbol_ctx.setSymbol("loop.previtem", types::NonconstantExpression{[val=prev->first]{return val;}});
-        }
         auto next = std::next(it);
-        if (it == std::end(m)) {
+        if (next == std::end(m)) {
             symbol_ctx.setSymbol("loop.nextitem", types::NonconstantExpression{});    
         } else {
-            symbol_ctx.setSymbol("loop.previtem", types::NonconstantExpression{[val=next->first]{return val;}});
+            symbol_ctx.setSymbol("loop.nextitem", types::NonconstantExpression{[val=next->first]{return val;}});
+        }
+
+        if (it == prev) {
+            symbol_ctx.setSymbol("loop.previtem", types::NonconstantExpression{});    
+        } else {
+            symbol_ctx.setSymbol("loop.previtem", types::NonconstantExpression{[val=prev->first]{return val;}});
         }
 
         symbol_ctx.setSymbol(symbol_names[0], types::NonconstantExpression{[val=it->first]{return val;}});
@@ -134,6 +135,7 @@ Context::RenderOutput handleMap(types::Map& m, detail::SymbolList &symbol_names,
         }
 
         ++itCounter;
+        prev = it;
     }
 
     return {ret, false};
@@ -142,83 +144,43 @@ Context::RenderOutput handleMap(types::Map& m, detail::SymbolList &symbol_names,
 }
 
 void action<grammar::for_control_statement>::success(const std::string &in, detail::SymbolList &symbol_names, ContextP &container_ctx, ContextP &inner_context, ContextP &outer_context) {
-    outer_context->addRenderToken([in=std::move(in), symbol_names=std::move(symbol_names), container_expr=container_ctx->popExpression(), inner_context=std::move(inner_context), outer_context=outer_context.get()]() mutable -> Context::RenderOutput
+    outer_context->addRenderToken([in=std::move(in), symbol_names=std::move(symbol_names), container_expr=container_ctx->popExpression(), container_ctx=std::move(container_ctx), inner_context=std::move(inner_context), outer_context=outer_context.get()]() mutable -> Context::RenderOutput
     {
         auto iterable = std::visit([](auto& expr){ return expr.eval(); }, container_expr);
         if (iterable.type() == typeid(symbol::List)) {
             if (symbol_names.size() != 1) {
                 throw std::runtime_error("cannot broadcast list items into " + std::to_string(symbol_names.size()) + " identifiers: \"" + in + "\"");
             }
-            types::List& l = std::any_cast<types::List&>(iterable);
+            auto& l = std::any_cast<types::List&>(iterable);
             return handleList(l, symbol_names[0], inner_context.get());
         } else if (iterable.type() == typeid(symbol::Map)) {
             if (symbol_names.size() > 2) {
                 throw std::runtime_error("cannot broadcast list items into more than two identifiers: \"" + in + "\"");
             }
-            types::Map& m = std::any_cast<types::Map&>(iterable);
+            auto& m = std::any_cast<types::Map&>(iterable);
+            return handleMap(m, symbol_names, inner_context.get());
+        } else if (iterable.type() == typeid(symbol::UnorderedMap)) {
+            if (symbol_names.size() > 2) {
+                throw std::runtime_error("cannot broadcast list items into more than two identifiers: \"" + in + "\"");
+            }
+            auto& m = std::any_cast<types::UnorderedMap&>(iterable);
+            return handleMap(m, symbol_names, inner_context.get());
+        } else if (iterable.type() == typeid(symbol::MultiMap)) {
+            if (symbol_names.size() > 2) {
+                throw std::runtime_error("cannot broadcast list items into more than two identifiers: \"" + in + "\"");
+            }
+            auto& m = std::any_cast<types::MultiMap&>(iterable);
+            return handleMap(m, symbol_names, inner_context.get());
+        } else if (iterable.type() == typeid(symbol::UnorderedMultiMap)) {
+            if (symbol_names.size() > 2) {
+                throw std::runtime_error("cannot broadcast list items into more than two identifiers: \"" + in + "\"");
+            }
+            auto& m = std::any_cast<types::UnorderedMultiMap&>(iterable);
             return handleMap(m, symbol_names, inner_context.get());
         }
         throw std::runtime_error{"cannot loop over something of type: \"" + internal::demangle(iterable.type()) + "\""};
         return {"", false};
     });
-
-    //     } else if (iterable.type() == typeid(symbol::Map)) {
-    //         if (symbol_names.size() > 2) {
-    //             throw std::runtime_error("cannot broadcast list items into more than two identifiers: \"" + in + "\"");
-    //         }
-    //         types::Map& m = std::any_cast<types::Map&>(iterable);
-    //         return [m = std::move(m), symbol_names=std::move(symbol_names), inner_context=std::move(inner_context)]() -> symbol::RenderOutput {
-    //             std::string ret;
-                
-    //             inner_context->setSymbol("loop.length",
-    //                 types::NonconstantExpression{
-    //                 [s=static_cast<types::Integer>(m.size())]{ 
-    //                     return s;
-    //                 }});
-
-    //             types::Integer itCounter {};
-    //             for (auto it=std::begin(m); it!=std::end(m); ++it) {
-    //                 inner_context->setSymbol("loop.index0", types::NonconstantExpression{[c=itCounter]{  return c; }});
-    //                 inner_context->setSymbol("loop.index",  types::NonconstantExpression{[c=itCounter+1]{  return c; }});
-    //                 inner_context->setSymbol("loop.revindex0", types::NonconstantExpression{[c=m.size() -itCounter-1]{  return c; }});
-    //                 inner_context->setSymbol("loop.revindex",  types::NonconstantExpression{[c=m.size()-itCounter]{  return c; }});
-
-    //                 inner_context->setSymbol("loop.first",  types::NonconstantExpression{[v=itCounter == 0]{  return v; }});
-    //                 inner_context->setSymbol("loop.last",  types::NonconstantExpression{[v=itCounter == static_cast<types::Integer>(m.size()-1)]{  return v; }});
-
-    //                 if (it == std::begin(m)) {
-    //                     inner_context->setSymbol("loop.previtem", types::NonconstantExpression{});
-    //                 } else {
-    //                     auto prev = std::prev(it);
-    //                     inner_context->setSymbol("loop.previtem", types::NonconstantExpression{[prev]{return prev->first;}});
-    //                 }
-    //                 auto next = std::next(it);
-    //                 if (next == std::end(m)) {
-    //                     inner_context->setSymbol("loop.nextitem", types::NonconstantExpression{});    
-    //                 } else {
-    //                     inner_context->setSymbol("loop.nextitem", types::NonconstantExpression{[next]{return next->first;}});
-    //                 }
-
-    //                 inner_context->setSymbol(symbol_names[0], types::NonconstantExpression{[it]{return it->first;}});
-    //                 if (symbol_names.size() == 2) {
-    //                     inner_context->setSymbol(symbol_names[1], types::NonconstantExpression{[it]{return it->second;}});
-    //                 }
-            
-    //                 auto ro = (*inner_context)();
-    //                 ret += ro.rendered;
-    //                 if (ro.stop_rendering_flag) {
-    //                     return {ret, true};
-    //                 }
-
-    //                 itCounter++;
-    //             }
-
-    //             return {ret, false};
-    //         };
-    //     }
-    //     throw std::runtime_error("cannot iterate over something of type \"" + internal::demangle(iterable.type()));
-    // };
-    // outer_context->addRenderToken(std::visit(handleLists, container_ctx->popExpression()));
 }
 
 void action<grammar::for_identifier>::apply(const std::string &name, detail::SymbolList &symbol_names, ContextP&) {
