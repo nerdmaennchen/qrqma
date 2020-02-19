@@ -42,7 +42,7 @@ void action<grammar::identifier>::apply(const std::string &in, ContextP &context
     auto value = (*context)[in];
     if (value) {
         context->pushExpression(std::visit(detail::overloaded{
-            [value](types::ConstantExpression& ce) -> types::Expression {
+            [](types::ConstantExpression& ce) -> types::Expression {
                 return types::ConstantExpression{[val=ce.eval()] { return val; }};
             },
             [value](types::NonconstantExpression&) -> types::Expression {
@@ -111,7 +111,7 @@ void action<grammar::atom_map>::success(ContextP& inner_context, ContextP& outer
             return m;
         }});
     } else {
-        outer_context->pushExpression(types::NonconstantExpression{[items=std::move(items), &outer_context] {
+        outer_context->pushExpression(types::NonconstantExpression{[items=std::move(items), outer_context=outer_context.get()] {
             types::Map m;
             for (auto k_it=items.begin(); k_it != items.end(); std::advance(k_it, 2)) {
                 auto v_it = std::next(k_it);

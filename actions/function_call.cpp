@@ -44,7 +44,7 @@ void action<grammar::ops::call>::success(std::string const& in, ContextP &contex
         });
     } else {
         context->pushExpression(NCE{
-            [ftor_e=std::move(ftor_e), args_r=std::move(args_r), in=std::move(in)] {
+            [ftor_e=std::move(ftor_e), args_r=std::move(args_r), in=std::move(in), argsC=std::move(argsC)] {
                 auto ftor = std::visit([](auto const& e) { return std::any_cast<symbol::Function>(e.eval()); }, ftor_e);
                 auto const& inArgTypes = ftor.argTypes;
                 if (args_r.size() != inArgTypes.size()) {
@@ -52,7 +52,9 @@ void action<grammar::ops::call>::success(std::string const& in, ContextP &contex
                 }
                 std::vector<std::any> args;
                 for (std::size_t i{0}; i < args_r.size(); ++i) {
-                    auto val = std::visit([](auto const& e) { return e.eval(); }, args_r[i]);
+                    auto val = std::visit([](auto const& e) {
+                        return e.eval();
+                    }, args_r[i]);
                     try {
                         args.emplace_back(convert(val, *inArgTypes[i]));
                     } catch (std::exception const& e) {

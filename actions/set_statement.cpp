@@ -12,12 +12,12 @@ void action<grammar::set_control_statement>::success(std::string &symbol_name, C
     auto e   = context->popExpression();
 
     context->setSymbol(symbol_name, std::visit(detail::overloaded{
-        [&context] (types::ConstantExpression const& ce) -> types::Expression {
+        [context=context.get()] (types::ConstantExpression const& ce) -> types::Expression {
             return types::ConstantExpression{
                 [val = ce.eval()]{ return val; }
             };
         },
-        [&context, symbol_name] (types::NonconstantExpression& nce) -> types::Expression{
+        [context=context.get(), symbol_name] (types::NonconstantExpression& nce) -> types::Expression{
             return std::move(nce);
         },
     }, e));

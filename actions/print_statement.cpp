@@ -18,10 +18,10 @@ void action<grammar::print_expression>::apply(ContextP &context) {
         }
         auto expression = std::move(stack.back());
         std::visit(detail::overloaded{
-            [&context] (types::ConstantExpression const& ce) {
+            [context=context.get()] (types::ConstantExpression const& ce) {
                 context->addRenderToken(std::move(convert<std::string>(ce.eval())));
             },
-            [&context] (types::NonconstantExpression& nce) {
+            [context=context.get()] (types::NonconstantExpression& nce) {
                 context->addRenderToken([nce=std::move(nce), &context]() -> Context::RenderOutput  {
                     return {
                         convert<std::string>(nce.eval()),
