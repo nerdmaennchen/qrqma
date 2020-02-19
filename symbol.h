@@ -5,6 +5,7 @@
 #include <type_traits>
 #include <any>
 #include <map>
+#include <unordered_map>
 #include <vector>
 #include <variant>
 
@@ -59,11 +60,14 @@ private:
 
 using List = std::vector<Symbol>;
 using Map = std::map<std::string, Symbol>;
+using MultiMap = std::multimap<std::string, Symbol>;
+using UnorderedMap = std::unordered_map<std::string, Symbol>;
+using UnorderedMultiMap = std::unordered_multimap<std::string, Symbol>;
 
 
 
 // the RenderOutput mechanism is used to render only parts of a template (e.g., for use as child template)
-struct RenderOutput { 
+struct RenderOutput {
     std::string rendered;
     bool stop_rendering_flag {false};
 };
