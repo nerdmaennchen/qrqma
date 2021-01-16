@@ -6,6 +6,6 @@
 [subrepo]
 	remote = git@github.com:gottliebtfreitag/sargparse
 	branch = master
-	commit = ff90151cf8fcb4cd130b8081a50359d7508eabf8
-	parent = 5145b01c24aae2d25bc28105dbd6d08fe33ba850
+	commit = d246c5ec3867e68f0c7d85a72539d518ea45d91a
+	parent = 20336f4d42ca68e90694e7ee93c3ac79bd91852b
 	cmdver = 0.3.1
