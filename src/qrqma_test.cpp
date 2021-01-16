@@ -44,7 +44,7 @@ void qrqma_test()
         test(*template_text);
     }
     if (template_file) {
-        auto content = qrqma::defaultLoader()(template_file->native());
+        auto content = qrqma::defaultLoader()(*template_file);
         test(content);
     }
 }

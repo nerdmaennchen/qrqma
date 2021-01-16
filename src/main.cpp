@@ -14,7 +14,7 @@ sargp::Parameter<std::optional<std::string>> printHelp{
 }
 
 int main(int argc, char **argv) {
-    if (std::string(argv[argc - 1]) == "--compgen") {
+    if (std::string(argv[argc - 1]) == "--bash_completion") {
         std::cout << sargp::compgen(argc - 2, argv + 1);
         return 0;
     }

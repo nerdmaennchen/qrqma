@@ -96,7 +96,7 @@ void qrqma_dbg() {
         );
     }
     if (template_file) {
-        auto content = qrqma::defaultLoader()(template_file->native());
+        auto content = qrqma::defaultLoader()(*template_file);
         pegtl::parse<pegtl::if_must<qrqma::grammar::grammar, pegtl::eof>, pegtl::nothing, normal>(
             pegtl::memory_input{content, ""}, Marker_Stack{}
         );
