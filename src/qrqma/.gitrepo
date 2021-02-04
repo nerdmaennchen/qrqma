@@ -6,7 +6,7 @@
 [subrepo]
 	remote = git@github.com:nerdmaennchen/qrqma.git
 	branch = master
-	commit = 40a9f687d5dd4795946b4d53fe2a333b87cb7506
+	commit = a8ccc6be13a2caa09d6a8ff471709e97866c5e75
 	parent = 5dfecc56a278cdda47d0b81da58c501671270e00
 	cmdver = 0.4.1
 	method = merge
