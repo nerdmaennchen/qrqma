@@ -5,6 +5,7 @@
 #include <numeric>
 #include <charconv>
 #include <stdexcept>
+#include <optional>
 
 namespace qrqma {
 namespace actions {
