@@ -77,6 +77,12 @@ struct for_control_statement : pegtl::seq<
 struct extends_token : pegtl::keyword<'e', 'x', 't', 'e', 'n', 'd', 's'> {};
 struct extends_control_statement : control_statement_token<extends_token , string_literal> {};
 
+struct include_token : pegtl::keyword<'i', 'n', 'c', 'l', 'u', 'd', 'e'> {};
+struct include_control_statement : control_statement_token<include_token , pegtl::seq<pegtl::success, expression>> {};
+
+struct try_include_token : pegtl::keyword<'t', 'r', 'y', '_', 'i', 'n', 'c', 'l', 'u', 'd', 'e'> {};
+struct try_include_control_statement : control_statement_token<try_include_token , pegtl::seq<pegtl::success, expression>> {};
+
 struct block_token : pegtl::keyword<'b', 'l', 'o', 'c', 'k'> {};
 struct block_content : pegtl::seq<pegtl::success, grammar> {};
 struct block_identifier : identifier {};
@@ -98,12 +104,14 @@ struct raw_control_statement : pegtl::seq<
     raw_end_token
     > {};
 
-struct block_control_statement_outer   : control_statement_outer<block_token, block_control_statement> {};
-struct if_control_statement_outer      : control_statement_outer<if_token, if_control_statement> {};
-struct set_control_statement_outer     : control_statement_outer<set_token, set_control_statement> {};
-struct for_control_statement_outer     : control_statement_outer<for_token, for_control_statement> {};
-struct extends_control_statement_outer : control_statement_outer<extends_token, extends_control_statement> {};
-struct raw_text_outer                  : control_statement_outer<raw_token, raw_control_statement> {};
+struct block_control_statement_outer       : control_statement_outer<block_token, block_control_statement> {};
+struct if_control_statement_outer          : control_statement_outer<if_token, if_control_statement> {};
+struct set_control_statement_outer         : control_statement_outer<set_token, set_control_statement> {};
+struct for_control_statement_outer         : control_statement_outer<for_token, for_control_statement> {};
+struct extends_control_statement_outer     : control_statement_outer<extends_token, extends_control_statement> {};
+struct include_control_statement_outer     : control_statement_outer<include_token, include_control_statement> {};
+struct try_include_control_statement_outer : control_statement_outer<try_include_token, try_include_control_statement> {};
+struct raw_text_outer                      : control_statement_outer<raw_token, raw_control_statement> {};
 
 struct control_statement : pegtl::sor<
                     block_control_statement_outer,
@@ -111,6 +119,8 @@ struct control_statement : pegtl::sor<
                     set_control_statement_outer, 
                     for_control_statement_outer,
                     extends_control_statement_outer,
+                    include_control_statement_outer,
+                    try_include_control_statement_outer,
                     raw_text_outer
                     > {};
 

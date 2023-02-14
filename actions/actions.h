@@ -20,6 +20,7 @@ template <typename Rule> struct action : pegtl::nothing<Rule> {};
 #include "function_call.h"
 #include "grammar.h"
 #include "if_statement.h"
+#include "include_statement.h"
 #include "index_operator.h"
 #include "print_statement.h"
 #include "set_statement.h"

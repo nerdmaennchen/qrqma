@@ -39,7 +39,7 @@ void action<grammar::extends_control_statement>::apply(ContextP& context) {
 		base_context
 	);
 	
-    context->addRenderToken([ctx=context.get(), base_context=std::move(base_context)]() -> Context::RenderOutput {
+    context->addRenderToken([base_context=std::move(base_context)]() -> Context::RenderOutput {
         return {std::move((*base_context)().rendered), true};
     });
 }
