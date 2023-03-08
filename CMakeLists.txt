@@ -9,13 +9,7 @@ target_sources(qrqma PRIVATE demangle.cpp loader.cpp template.cpp)
 target_include_directories(qrqma PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 
 set(DEST_DIR "${CMAKE_INSTALL_PREFIX}")
-
-execute_process(
-        COMMAND git describe --tags
-        OUTPUT_VARIABLE VERSION
-        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-        ERROR_VARIABLE VERSION_ERROR
-        OUTPUT_STRIP_TRAILING_WHITESPACE)
+set(VERSION "${PROJECT_VERSION}")
 
 if(VERSION STREQUAL "")
     message(FATAL_ERROR "cannot generate version string")
