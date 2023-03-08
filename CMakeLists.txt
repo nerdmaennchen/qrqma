@@ -2,12 +2,11 @@ cmake_minimum_required(VERSION 3.12)
 project(qrqma)
 include(GNUInstallDirs)
 
-set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_CXX_STANDARD_REQUIRED True)
-
-file(GLOB_RECURSE CPP_SRCS ./*.cpp)
-
-add_library(qrqma SHARED ${CPP_SRCS})
+add_library(qrqma)
+add_library(qrqma::qrqma ALIAS qrqma)
+target_compile_features(qrqma PUBLIC cxx_std_17)
+target_sources(qrqma PRIVATE demangle.cpp loader.cpp template.cpp)
+target_include_directories(qrqma PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 
 set(DEST_DIR "${CMAKE_INSTALL_PREFIX}")
 
