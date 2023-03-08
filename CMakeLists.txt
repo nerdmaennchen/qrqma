@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.12)
-project(qrqma)
+project(qrqma VERSION 0.9.5 LANGUAGES CXX)
 include(GNUInstallDirs)
 
 add_library(qrqma)
